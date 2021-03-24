@@ -47,17 +47,27 @@ type inventory = {
 
 type vec2 = {x: int; y: int;}
 
-type trade = {
+type trade_offer = {
   team_from: tTeam;
   offer: tResource list;
   request: tResource list;
 }
 
+type edge_coord = vec2
+type vertex_coord = vec2
+
 type game_state = {
   hexes: (vec2 * tHex) list;
   ports: (int * tPort) list;
-  edges: (vec2 * tEdge) list;
-  vericies: (vec2 * tVertex) list;
+  edges: (edge_coord * tEdge) list;
+  vericies: (vertex_coord * tVertex) list;
   inventories: (tTeam * inventory) list;
-  trades: trade list;
+  trades: trade_offer list;
 }
+
+type tMove =
+  | DevCard of tDevCard
+  | Trade of trade_offer
+  | BuildRoad of (tTeam * edge_coord)
+  | BuildSettlement of (tTeam * vertex_coord)
+  | BuildCity of (tTeam * vertex_coord)
