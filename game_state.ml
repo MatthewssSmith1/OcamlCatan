@@ -45,6 +45,8 @@ type inventory = {
   cities_left: int;
 }
 
+(** this is a fantastic resource for how me way want to represent
+    hex coords https://www.redblobgames.com/grids/hexagons/ *)
 type vec2 = {x: int; y: int;}
 
 type trade_offer = {
