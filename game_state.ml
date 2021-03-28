@@ -84,9 +84,17 @@ let rec list_merger list_1 list_2 =
   | _, _ -> failwith "Dimensions not equal"
 
 let make_new_game (hex_list : tHex list) (ports : (int * tPort) list) =
-  let vec_order = to_vec2_list [(0, -2); (1, -2); (2, -2); (-1, -1); (0, -1);
-  (1, -1); (2, -1); (-2, 0); (-1, 0); (0, 0); (1, 0); (2, 0);
-  (-2, 1); (-1,1); (0, 1); (1, 1); (-2, 2); (-1, 2); (0, 2)] in
-  let hexes = list_merger vec_order hex_list in
-  {hexes = hexes; ports = ports; edges = []; vertices = [];
+  let hex_vec = to_vec2_list [(0, -6); (3, -6); (6, -6); (-3, -3); (0, -3);
+  (3, -3); (6, -3); (-6, 0); (-3, 0); (0, 0); (3, 0); (6, 0);
+  (-6, 3); (-3,3); (0, 3); (3, 3); (-6, 6); (-3, 6); (0, 6)] in
+  let hexes = list_merger hex_vec hex_list in
+  let vert_vec = to_vec2_list [(1, -8); (4, -8); (7, -8); (-1, -7);
+  (2, -7); (5, -7); (8, -7); (-2, -5); (1, -5); (4, -5); (7, -5); (-4, -4);
+  (-1, -4); (2, -4); (5, -4); (8, -4); (-5, -2); (-2, -2); (1, -2); (4, -2);
+  (7, -2); (-7, -1); (-4, -1); (-1, -1); (2, -1); (5, -1); (8, -1); (-8, 1);
+  (-5, 1); (-2, 1); (1, 1); (4, 1); (7, 1); (-7, 2); (-4, 2); (-1, 2); (2, 2);
+  (5, 2); (-8, 4); (-5, 4); (-2, 4); (1, 4); (4, 4); (-7, 5); (-4, 5); (-1, 5);
+  (2, 5); (-8, 7); (-5, 7); (-2, 7); (1, 7); (-7, 8); (-4, 8); (-1, 8)] in
+  let verticies = List.map (fun x -> (x, (Empty : tVertex))) vert_vec in
+  {hexes = hexes; ports = ports; edges = []; vertices = verticies;
   inventories = []; trades = []}
