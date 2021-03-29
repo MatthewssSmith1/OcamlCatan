@@ -127,7 +127,8 @@ let rec thing_finder list input =
     match h with
     | (a, b) -> if input = a then Some b else thing_finder t input
 
-(*Hex to adj verts, vert to adj verts, both should work*)
+(* If input vec is a hex, then return adjacent verticies.
+If input is a vertex, then return adjacent verticies. *)
 let find_adj (state : game_state) (input : vec2) =
   let x = input.x in
   let y = input.y in
