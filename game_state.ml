@@ -119,3 +119,25 @@ let make_new_game (hex_list : tHex list) (ports : (int * tPort) list) =
   let verticies = List.map (fun x -> (x, (Empty : tVertex))) vert_vec in
   {hexes = hexes; ports = ports; edges = edges; vertices = verticies;
   inventories = []; trades = []}
+
+let rec thing_finder list input =
+  match list with
+  | [] -> None
+  | h :: t ->
+    match h with
+    | (a, b) -> if input = a then Some b else thing_finder t input
+
+(*Hex to adj verts, vert to adj verts, both should work*)
+let find_adj (state : game_state) (input : vec2) =
+  let x = input.x in
+  let y = input.y in
+  let vecs = to_vec2_list [(x+2, y-4); (x-2, y-2); (x+4, y-2);
+  (x-4, y+2); (x+2, y+2); (x-2, y+4)] in
+  let rec option_remover list =
+    match list with
+    | [] -> []
+    | h :: t ->
+      match h with
+      | None -> option_remover t
+      | Some x -> x :: (option_remover t) in
+  option_remover (List.map (thing_finder state.vertices) vecs)
