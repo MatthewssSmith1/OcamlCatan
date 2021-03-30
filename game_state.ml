@@ -119,7 +119,7 @@ let make_new_game (hex_list : tHex list) (ports : (int * tPort) list) =
   let edges = List.map (fun x -> (x, (Empty : tEdge))) edge_vec in
   let verticies = List.map (fun x -> (x, (Empty : tVertex))) vert_vec in
   {hexes = hexes; ports = ports; edges = edges; vertices = verticies;
-  inventories = []; trades = []}
+  inventories = []; trades = []; robber = {x = 0; y = 0}}
 
 let rec thing_finder list input =
   match list with
