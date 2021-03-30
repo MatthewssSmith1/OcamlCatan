@@ -113,7 +113,23 @@ let vert_vec = to_vec2_list [(2, -16); (8, -16); (14, -16); (-2, -14);
   (2, 8); (8, 8); (-14, 10); (-8, 10); (-2, 10); (4, 10); (-16, 14);
   (-10, 14); (-4, 14); (2, 14); (-14, 16); (-8, 16); (-2, 16)]
 
-(*Creates a new empty game based on the inputs*)
+(* Returns a list of the coordinates of the hexes with the specified input,
+or deserts if 0*)
+let rec hex_finder (hexes : (vec2 * tHex) list) (input : int) =
+  match hexes with
+  | [] -> []
+  | h :: t ->
+    if input = 0 then
+    match h with
+    | (a, Desert) -> a :: hex_finder t input 
+    | _ -> hex_finder t input
+    else 
+    match h with
+    | (a, Other (b, _)) -> if input = b
+      then a :: hex_finder t input else hex_finder t input
+    | _ -> hex_finder t input
+
+  (*Creates a new empty game based on the inputs*)
 let make_new_game (hex_list : tHex list) (ports : (int * tPort) list) =
   let hexes = list_merger hex_vec hex_list in
   let edges = List.map (fun x -> (x, (Empty : tEdge))) edge_vec in
