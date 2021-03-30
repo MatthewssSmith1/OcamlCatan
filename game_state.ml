@@ -127,6 +127,9 @@ let rec thing_finder list input =
     match h with
     | (a, b) -> if input = a then Some b else thing_finder t input
 
+let rec thing_replacer list (a, b) =
+  List.map (fun (x, y) -> if x = a then (a, b) else (x, y)) list
+
 (* If input vec is a hex, then return adjacent verticies.
 If input is a vertex, then return adjacent verticies. *)
 let find_adj (state : game_state) (input : vec2) =
@@ -142,3 +145,37 @@ let find_adj (state : game_state) (input : vec2) =
       | None -> option_remover t
       | Some x -> x :: (option_remover t) in
   option_remover (List.map (thing_finder state.vertices) vecs)
+
+(* Gives a player a certain amount of a certain resource *)
+let rec give_player_resources (state : game_state)
+(resource : tResource) (team : tTeam) (amount : int) =
+  if amount <= 0 then state else
+  let inventory = thing_finder state.inventories team in
+  match inventory with
+  | None -> state
+  | Some x ->
+    let new_res = resource :: x.resource_cards in
+    let new_inv = (team, {x with resource_cards = new_res}) in
+    let new_invs = thing_replacer state.inventories new_inv in
+    give_player_resources {state with inventories = new_invs}
+    resource team (amount - 1)
+    
+
+(* Gives resources to settlements and cities around a hex 
+Requires: input is the coordinates of a hex *)
+let give_resources (state : game_state) (input : vec2) =
+  match thing_finder state.hexes input with
+  | None -> state
+  | Some Desert -> state
+  | Some (Other (_, x)) -> let resource = x in
+  let adj_verts = find_adj state input in
+  let rec give_helper (state : game_state)
+  (resource : tResource) (verts : tVertex list) =
+  match verts with
+  | [] -> state
+  | Empty :: t -> give_helper state resource t
+  | (Settlement x) :: t -> give_helper
+  (give_player_resources state resource x 1) resource t
+  | (City x) :: t -> give_helper
+  (give_player_resources state resource x 2) resource t in
+  give_helper state resource adj_verts
