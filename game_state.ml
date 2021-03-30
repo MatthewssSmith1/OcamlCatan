@@ -65,6 +65,7 @@ type game_state = {
   vertices: (vertex_coord * tVertex) list;
   inventories: (tTeam * inventory) list;
   trades: trade_offer list;
+  robber: vec2;
 }
 
 type tMove =
