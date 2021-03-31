@@ -134,8 +134,14 @@ let make_new_game (hex_list : tHex list) (ports : (int * tPort) list) =
   let hexes = list_merger hex_vec hex_list in
   let edges = List.map (fun x -> (x, (Empty : tEdge))) edge_vec in
   let verticies = List.map (fun x -> (x, (Empty : tVertex))) vert_vec in
+  let desert = match hex_finder hexes 0 with
+  | [x] -> x
+  | _ -> failwith "bad desert" in
+  let empty_inv = {resource_cards = []; dev_cards = []; roads_left = 15;
+  settlements_left = 5; cities_left = 4} in
   {hexes = hexes; ports = ports; edges = edges; vertices = verticies;
-  inventories = []; trades = []; robber = {x = 0; y = 0}}
+  inventories = [(Red, empty_inv); (Orange, empty_inv);
+  (Blue, empty_inv); (White, empty_inv)]; trades = []; robber = desert}
 
 let rec thing_finder list input =
   match list with
