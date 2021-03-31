@@ -1,7 +1,7 @@
-type board
+type t
 
-val add_road : Player.player -> int -> int -> board -> board
+val add_road : Player.t -> int -> int -> t -> t
 
-val add_settlement : Player.player -> int -> int -> board -> board
+val add_settlement : Player.t -> int -> int -> t -> t
 
-val upgrade_city : Player.player -> int -> int -> board -> board
+val upgrade_city : Player.t -> int -> int -> t -> t
