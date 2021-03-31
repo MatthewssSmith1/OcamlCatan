@@ -1,5 +1,3 @@
-module type Player = sig
-  type player
+type player
 
-  val add_resource : (*resource*) int -> player -> player
-end
+val add_resource : (*resource*) int -> player -> player
