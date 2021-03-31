@@ -1,4 +1,49 @@
-type tResource =
+type t = ()
+type resource =
+  | Wood
+  | Sheep
+  | Wheat
+  | Brick
+  | Ore
+
+type hex =
+  | Desert
+  | Other of (int * resource)
+
+type port =
+  | ThreeToOne
+  | TwoToOne of resource
+
+type team =
+  | Red
+  | Orange
+  | Blue
+  | White
+
+type vertex =
+  | Empty
+  | Settlement of team
+  | City of team
+
+type edge =
+  | Empty
+  | Road of team
+
+type devCard =
+  | Knight
+  | RoadBuilding
+  | YearOfPlenty
+  | Monopoly
+  | VictoryPoint
+
+type trade_offer = {
+  team_from : team;
+  offer : resource list;
+  request : resource list;
+}
+let next_move = failwith "TODO"
+
+(* type tResource =
   | Wood
   | Sheep
   | Wheat
@@ -201,4 +246,4 @@ let give_resources (state : game_state) (input : vec2) =
   (give_player_resources state resource x 1) resource t
   | (City x) :: t -> give_helper
   (give_player_resources state resource x 2) resource t in
-  give_helper state resource adj_verts
+  give_helper state resource adj_verts *)

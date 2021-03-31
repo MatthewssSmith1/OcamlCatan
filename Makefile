@@ -1,4 +1,4 @@
-MODULES= board game_state player main
+MODULES= board game_state player main input
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

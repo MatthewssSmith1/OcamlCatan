@@ -30,9 +30,17 @@ type edge =
   | Empty
   | Road of team
 
-type tDevCard =
+type devCard =
   | Knight
   | RoadBuilding
   | YearOfPlenty
   | Monopoly
   | VictoryPoint
+
+type trade_offer = {
+  team_from : team;
+  offer : resource list;
+  request : resource list;
+}
+
+val next_move : t -> Input.move -> t
