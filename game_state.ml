@@ -1,4 +1,7 @@
-type t = unit
+type t = {
+  board : Board.t;
+  players : Player.t list;
+}
 type resource =
   | Wood
   | Sheep
@@ -14,7 +17,7 @@ type port =
   | ThreeToOne
   | TwoToOne of resource
 
-type team =
+type color =
   | Red
   | Orange
   | Blue
@@ -22,12 +25,12 @@ type team =
 
 type vertex =
   | Empty
-  | Settlement of team
-  | City of team
+  | Settlement of Player.t
+  | City of Player.t
 
 type edge =
   | Empty
-  | Road of team
+  | Road of Player.t
 
 type devCard =
   | Knight
@@ -37,7 +40,7 @@ type devCard =
   | VictoryPoint
 
 type trade_offer = {
-  team_from : team;
+  team_from : Player.t;
   offer : resource list;
   request : resource list;
 }
