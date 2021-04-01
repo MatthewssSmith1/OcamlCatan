@@ -147,3 +147,33 @@ let hex_info board n =
   match board.hexes.(x).(y) with
   | Some a -> a
   | None -> failwith "out of bounds"
+
+let hex_to_vertices board n =
+  let coords = hex_coords n in
+  let rec hex_to_vertices_helper x acc =
+    if x = 6 then acc
+    else
+      let a, b = vertex_from_hex coords x in
+      let vertex =
+        match board.vertices.(a).(b) with
+        | Some v -> v
+        | _ -> failwith "out of bounds"
+      in
+      vertex :: hex_to_vertices_helper (x + 1) acc
+  in
+  hex_to_vertices_helper 0 []
+
+let hex_to_edges board n =
+  let coords = hex_coords n in
+  let rec hex_to_edges_helper x acc =
+    if x = 6 then acc
+    else
+      let a, b = edge_from_hex coords x in
+      let edge =
+        match board.edges.(a).(b) with
+        | Some e -> e
+        | _ -> failwith "out of bounds"
+      in
+      edge :: hex_to_edges_helper (x + 1) acc
+  in
+  hex_to_edges_helper 0 []

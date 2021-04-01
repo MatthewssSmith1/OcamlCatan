@@ -44,6 +44,24 @@ let rec print_raster =
   Array.iter (fun row ->
       Array.iter print_pixel row;
       print_endline "")
+      
+let edge_dir_offsets = 
+    [[(4,-1);(4,0);(5,0);(5,1);(6,1);(6,2)];
+    [(7,3);(7,4);(7,5)];
+    [(6,6);(6,7);(5,7);(5,8);(4,8);(4,9)];
+    [(2,9);(2,8);(1,8);(1,7);(0,7);(0,6)];
+    [(-1,5);(-1,4);(-1,3)];
+    [(0,2);(0,1);(1,1);(1,0);(2,0);(2,-1)]]
+
+let draw_road raster style dir coords =
+    let offsets = List.nth edge_dir_offsets dir in
+    List.iter (fun offset -> raster.(snd coords + snd offset).(fst coords + fst offset) <- { ansi_style = [ style ]; content = "  " }) offsets
+
+let vertex_dir_offsets = [(3,-1);(7,2);(7,6);(3,9);(-1,6);(-1,2)]
+
+let draw_vertex raster style dir coords = 
+    let offset = List.nth vertex_dir_offsets dir in
+    raster.(snd coords + snd offset).(fst coords + fst offset) <- { ansi_style = [ style ]; content = "  " }
 
 let draw_hex raster style number coords =
   (* checks if the pixel is in one of the corners, cuts off corners of
