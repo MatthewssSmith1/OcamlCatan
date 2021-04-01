@@ -3,6 +3,12 @@ type t = {
   players : Player.t list;
 }
 
+let make_new_game = 
+  {board = Board.make_random_board; players = []}
+
+let add_player game_state color =
+  {game_state with players = Player.make_player color :: game_state.players}
+
 let distribute_resources = failwith "TODO"
 
 let next_move = failwith "TODO"
