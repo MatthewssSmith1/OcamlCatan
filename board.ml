@@ -55,7 +55,7 @@ let add_road player hex dir board =
   | Some (Road _) -> failwith "road already exists"
   | None -> failwith "out of bounds"
   | Some Empty ->
-      board.edges.(a).(b) = Some (Road player);
+      board.edges.(a).(b) = Some (Road (Player.get_color player));
       board
 
 let add_settlement player hex dir board =
@@ -64,7 +64,8 @@ let add_settlement player hex dir board =
   match board.vertices.(a).(b) with
   | None -> failwith "out of bounds"
   | Some Empty ->
-      board.vertices.(a).(b) = Some (Settlement player);
+      board.vertices.(a).(b)
+      = Some (Settlement (Player.get_color player));
       board
   | _ -> failwith "already exists"
 

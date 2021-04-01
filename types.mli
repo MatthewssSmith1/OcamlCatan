@@ -21,12 +21,12 @@ type color =
 
 type vertex =
   | Empty
-  | Settlement of Player.t
-  | City of Player.t
+  | Settlement of color
+  | City of color
 
 type edge =
   | Empty
-  | Road of Player.t
+  | Road of color
 
 type devCard =
   | Knight
@@ -36,7 +36,7 @@ type devCard =
   | VictoryPoint
 
 type trade_offer = {
-  team_from : Player.t;
+  team_from : color;
   offer : resource list;
   request : resource list;
 }
