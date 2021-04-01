@@ -1,4 +1,7 @@
-type t = unit
+type t = {
+  board : Board.t;
+  players : Player.t list;
+}
 let next_move = failwith "TODO"
 
 (* type tResource =
