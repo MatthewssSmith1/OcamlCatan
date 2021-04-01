@@ -80,5 +80,27 @@ let make_player some_color =
     color = some_color;
   }
 
+  let pp_list pp_elt lst =
+    let pp_elts lst =
+      let rec loop n acc = function
+        | [] -> acc
+        | [ h ] -> acc ^ pp_elt h
+        | h1 :: (h2 :: t as t') ->
+            if n = 100 then acc ^ "..." (* stop printing long list *)
+            else loop (n + 1) (acc ^ pp_elt h1 ^ "; ") t'
+      in
+      loop 0 "" lst
+    in
+    "[" ^ pp_elts lst ^ "]"
+  
   let to_string t =
-    "Wood: " ^ string_of_int t.wood
+    "Color: " ^ Types.color_to_string t.color ^
+    "Wood: " ^ string_of_int t.wood ^
+    "Sheep: " ^ string_of_int t.sheep ^
+    "Wheat: " ^ string_of_int t.wheat ^
+    "Brick: " ^ string_of_int t.brick ^
+    "Ore: " ^ string_of_int t.ore ^ "\n" ^
+    "Development Cards: " ^ pp_list Types.dev_card_to_string t.devs ^ "\n" ^
+    "Remaining Roads: " ^ string_of_int t.roads ^
+    "Remaining Settlements: " ^ string_of_int t.settlements ^
+    "Remaining Cities: " ^ string_of_int t.cities

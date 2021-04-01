@@ -1,1 +1,1 @@
-val print_board : Board.t -> ()
+val print_board : Board.t -> unit

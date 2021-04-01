@@ -15,7 +15,7 @@ type port =
 
 type color =
   | Red
-  | Orange
+  | Green
   | Blue
   | White
 
@@ -40,3 +40,26 @@ type trade_offer = {
   offer : resource list;
   request : resource list;
 }
+
+let resource_to_string resource =
+  match resource with
+  | Wood -> "Wood"
+  | Sheep -> "Sheep"
+  | Wheat -> "Wheat"
+  | Brick -> "Brick"
+  | Ore -> "Ore"
+
+let color_to_string color =
+  match color with
+  | Red -> "Red"
+  | Green -> "Green"
+  | Blue -> "Blue"
+  | White -> "White"
+
+let dev_card_to_string card =
+  match card with
+  | Knight -> "Knight"
+  | RoadBuilding -> "Road Building"
+  | YearOfPlenty -> "Year of Plenty"
+  | Monopoly -> "Monopoly"
+  | VictoryPoint -> "Victory Point"
