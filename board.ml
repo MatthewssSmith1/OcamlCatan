@@ -92,10 +92,6 @@ let make_board_from_array tiles =
   in
   for i = 0 to 18 do
     let x, y = hex_coords i in
-    print_endline
-      ( match tiles.(i) with
-      | Types.Desert -> "Desert"
-      | Other (a, _) -> string_of_int a );
     board.hexes.(x).(y) <- Some tiles.(i);
     for j = 0 to 5 do
       let a, b = vertex_from_hex (x, y) j in
@@ -130,13 +126,21 @@ let basic =
       Other (11, Sheep);
     |]
 
-let make_board = make_board_from_array basic
+let make_board () = make_board_from_array basic
 
-let make_random_board =
-  (* let shuffle a = let n = Array.length a in let a = Array.copy a in
-     for i = n - 1 downto 1 do let k = Random.int (i + 1) in let x =
-     a.(k) in a.(k) <- a.(i); a.(i) <- x done; a in *)
-  make_board_from_array basic
+let make_random_board () =
+  let shuffle a =
+    let n = Array.length a in
+    let a = Array.copy a in
+    for i = n - 1 downto 1 do
+      let k = Random.int (i + 1) in
+      let x = a.(k) in
+      a.(k) <- a.(i);
+      a.(i) <- x
+    done;
+    a
+  in
+  make_board_from_array (shuffle basic)
 
 let hex_info board n =
   let x, y = hex_coords n in

@@ -5,7 +5,7 @@ type t = {
 
 let game_to_board game = game.board
 let make_new_game = 
-  {board = Board.make_board; players = []}
+  {board = Board.make_board (); players = []}
 
 let get_board t = t.board
 
