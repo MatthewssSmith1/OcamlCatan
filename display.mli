@@ -1,2 +1,1 @@
-
-val print_board : Bard.t -> ()
+val print_board : Board.t -> ()
