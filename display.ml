@@ -104,7 +104,7 @@ let draw_hex raster style number coords =
     for j = 0 to 8 do
       if is_in_bounds i j then
         let content =
-          " " ^ if (i, j) = (3, 4) then List.nth numbers number else " "
+          " " ^ if (i, j) = (3, 4) then List.nth numbers (number-1) else " "
         in
         let x = fst coords + i in
         let y = snd coords + j in
@@ -122,19 +122,21 @@ let hex_to_pixel_coords hex_coords =
 
 let draw_board raster (board : Board.t) =
   for i = 0 to 18 do
+    print_endline
+      ( match Board.hex_info board i with
+      | Types.Desert -> "desert"
+      | Other (h, k) -> Types.resource_to_string k );
     let coords = Board.hex_coords i in
     let color = hex_to_ansi_color (Board.hex_info board i) in
-    let number = match Board.hex_info board i with
+    let number =
+      match Board.hex_info board i with
       | Types.Desert -> 7
-      | Other (x,_) -> x in
-    coords |> hex_to_pixel_coords
-    |> draw_hex raster color number;
-    (* List.iteri
-      (fun i v -> draw_vertex raster v i coords)
-      (Board.hex_to_vertices board i);
-    List.iteri
-      (fun i e -> draw_road raster e i coords)
-      (Board.hex_to_edges board i) *)
+      | Other (x, _) -> x
+    in
+    coords |> hex_to_pixel_coords |> draw_hex raster color number
+    (* List.iteri (fun i v -> draw_vertex raster v i coords)
+       (Board.hex_to_vertices board i); List.iteri (fun i e -> draw_road
+       raster e i coords) (Board.hex_to_edges board i) *)
   done
 
 let print_board (board : Board.t) =

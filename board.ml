@@ -143,10 +143,10 @@ let make_random_board () =
   make_board_from_array (shuffle basic)
 
 let hex_info board n =
-  let x, y = hex_coords n in
-  match board.hexes.(x).(y) with
-  | Some a -> a
-  | None -> failwith "out of bounds"
+  (* let x, y = hex_coords n in match board.hexes.(x).(y) with | Some a
+     -> (* print_endline (string_of_bool (basic.(n) = a)); *) a | None
+     -> failwith "out of bounds" *)
+  basic.(n)
 
 let hex_to_vertices board n =
   let coords = hex_coords n in
