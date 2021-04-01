@@ -76,7 +76,8 @@ let upgrade_city player hex dir board =
   | None -> failwith "out of bounds"
   | Some Empty -> failwith "can't build city on empty"
   | Some (Settlement c) ->
-      if c <> player then failwith "can't build city on wrong color"
+      if c <> Player.get_color player then
+        failwith "can't build city on wrong color"
       else board.vertices.(a).(b) = Some (Settlement c);
       board
   | Some (City _) -> failwith "can't build city on city"
@@ -102,7 +103,7 @@ let make_board_from_array tiles =
   board
 
 let basic =
-  Game_state.
+  Types.
     [|
       Other (10, Ore);
       Other (2, Sheep);
