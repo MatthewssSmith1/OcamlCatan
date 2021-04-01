@@ -62,7 +62,10 @@ let place_city player =
       settlements = player.settlements + 1;
     }
 
-let make_player color =
+let get_color player =
+  player.color
+
+let make_player some_color =
   {
     wood = 0;
     sheep = 0;
@@ -74,5 +77,5 @@ let make_player color =
     settlements = 5;
     cities = 4;
     ports = [];
-    color;
+    color = some_color;
   }

@@ -18,4 +18,6 @@ val place_settlement : t -> t
 
 val place_city : t -> t
 
+val get_color : t -> Types.color
+
 val make_player : t
