@@ -72,13 +72,13 @@ let edge_dir_offsets =
 let draw_road raster (edge : Types.edge) dir coords =
   match edge with
   | Empty -> ()
-  | Road color ->
+  | Road team_color ->
       let offsets = List.nth edge_dir_offsets dir in
       List.iter
         (fun offset ->
           raster.(snd coords + snd offset).(fst coords + fst offset) <-
             {
-              ansi_style = [ team_color_to_ansi color ];
+              ansi_style = [ team_color_to_ansi team_color ];
               content = "  ";
             })
         offsets
@@ -87,12 +87,16 @@ let vertex_dir_offsets =
   [ (3, -1); (7, 2); (7, 6); (3, 9); (-1, 6); (-1, 2) ]
 
 let draw_vertex raster (vertex : Types.vertex) dir coords =
-  match vertex with
-  | Empty -> ()
-  | _ ->
-      let offset = List.nth vertex_dir_offsets dir in
-      raster.(snd coords + snd offset).(fst coords + fst offset) <-
-        { ansi_style = [ on_cyan ]; content = "  " }
+  let color =
+    match vertex with
+    | Empty -> on_white
+    | Settlment team_color -> team_color_to_ansi team_color
+    | City team_color -> team_color_to_ansi team_color
+  in
+
+  let offset = List.nth vertex_dir_offsets dir in
+  raster.(snd coords + snd offset).(fst coords + fst offset) <-
+    { ansi_style = [ color ]; content = "  " }
 
 let draw_hex raster style number coords =
   (* checks if the pixel is in one of the corners, cuts off corners of
@@ -104,7 +108,9 @@ let draw_hex raster style number coords =
     for j = 0 to 8 do
       if is_in_bounds i j then
         let content =
-          " " ^ if (i, j) = (3, 4) then List.nth numbers (number-1) else " "
+          " "
+          ^
+          if (i, j) = (3, 4) then List.nth numbers (number - 1) else " "
         in
         let x = fst coords + i in
         let y = snd coords + j in
@@ -133,10 +139,16 @@ let draw_board raster (board : Board.t) =
       | Types.Desert -> 7
       | Other (x, _) -> x
     in
-    coords |> hex_to_pixel_coords |> draw_hex raster color number
-    (* List.iteri (fun i v -> draw_vertex raster v i coords)
-       (Board.hex_to_vertices board i); List.iteri (fun i e -> draw_road
-       raster e i coords) (Board.hex_to_edges board i) *)
+    coords |> hex_to_pixel_coords |> draw_hex raster color number;
+    List.iteri
+      (fun i vertex ->
+        match vertex with
+        | Empty -> ()
+        | v -> draw_vertex raster v i coords)
+      (Board.hex_to_vertices board i);
+    List.iteri
+      (fun i e -> draw_road raster e i coords)
+      (Board.hex_to_edges board i)
   done
 
 let print_board (board : Board.t) =
