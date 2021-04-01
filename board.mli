@@ -11,3 +11,7 @@ val make_board : t
 val make_random_board : t
 
 val hex_info : t -> int -> Types.hex
+
+val hex_to_vertices : t -> int -> Types.vertex list
+
+val hex_to_edges : t -> int -> Types.edge list

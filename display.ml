@@ -44,16 +44,16 @@ let rec print_raster =
   Array.iter (fun row ->
       Array.iter print_pixel row;
       print_endline "")
-      
-let vertex_dir_offsets = [(3,-1);(7,2);(7,6);(3,9);(-1,6);(-1,2)]
 
 let draw_road raster style dir coords = ()
 
-let vertex_dir_offsets = [(3,-1);(7,2);(7,6);(3,9);(-1,6);(-1,2)]
+let vertex_dir_offsets =
+  [ (3, -1); (7, 2); (7, 6); (3, 9); (-1, 6); (-1, 2) ]
 
-let draw_vertex raster style dir coords = 
-    let offset = List.nth vertex_dir_offsets dir in
-    raster.(snd coords + snd offset).(fst coords + fst offset) <- { ansi_style = [ style ]; content = "  " }
+let draw_vertex raster style dir coords =
+  let offset = List.nth vertex_dir_offsets dir in
+  raster.(snd coords + snd offset).(fst coords + fst offset) <-
+    { ansi_style = [ style ]; content = "  " }
 
 let draw_hex raster style number coords =
   (* checks if the pixel is in one of the corners, cuts off corners of
@@ -111,7 +111,8 @@ let draw_board raster =
       | None -> ANSITerminal.default
       | Some c -> c
     in
-    i |> hex_coords |> hex_to_pixel_coords
+    let coords = hex_coords i in
+    coords |> hex_to_pixel_coords
     |> draw_hex raster color (Random.int 12)
   done
 
