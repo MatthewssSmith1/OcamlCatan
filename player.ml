@@ -62,6 +62,9 @@ let place_city player =
       settlements = player.settlements + 1;
     }
 
+let get_color player =
+  player.color
+
 let make_player some_color =
   {
     wood = 0;
