@@ -2,6 +2,7 @@ type t
 
 val make_new_game : t
 
+(** Requires that a player of the given color has not been added before *)
 val add_player : t -> Types.color -> t
 
 val distribute_resources : t -> int -> t

@@ -79,3 +79,6 @@ let make_player some_color =
     ports = [];
     color = some_color;
   }
+
+  let to_string t =
+    "Wood: " ^ string_of_int t.wood

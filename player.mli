@@ -21,3 +21,5 @@ val place_city : t -> t
 val get_color : t -> Types.color
 
 val make_player : Types.color -> t
+
+val to_string : t -> string
