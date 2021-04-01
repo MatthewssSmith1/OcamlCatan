@@ -9,6 +9,7 @@ type t = {
   cities : int;
   roads : int;
   ports : Game_state.port list;
+  color : Game_state.color;
 }
 
 exception Not_enough_resources
@@ -59,7 +60,7 @@ let place_city player =
     then raise Not_enough_pieces
     else {player with cities = player.cities - 1;
     settlements = player.settlements + 1}
-let make_player =
+let make_player color =
   {
     wood = 0;
     sheep = 0;
@@ -71,4 +72,5 @@ let make_player =
     settlements = 5;
     cities = 4;
     ports = [];
+    color = color;
   }
