@@ -1,7 +1,7 @@
 type t = {
-  hexes : Game_state.hex option array array;
-  vertices : Game_state.vertex option array array;
-  edges : Game_state.edge option array array;
+  hexes : Types.hex option array array;
+  vertices : Types.vertex option array array;
+  edges : Types.edge option array array;
 }
 
 let hex_coords = function
@@ -55,7 +55,7 @@ let add_road player hex dir board =
   | Some (Road _) -> failwith "road already exists"
   | None -> failwith "out of bounds"
   | Some Empty ->
-      board.edges.(a).(b) = Some (Road (*player*) Red);
+      board.edges.(a).(b) = Some (Road player);
       board
 
 let add_settlement player hex dir board =
@@ -64,7 +64,7 @@ let add_settlement player hex dir board =
   match board.vertices.(a).(b) with
   | None -> failwith "out of bounds"
   | Some Empty ->
-      board.vertices.(a).(b) = Some (Settlement (*player*) Red);
+      board.vertices.(a).(b) = Some (Settlement player);
       board
   | _ -> failwith "already exists"
 
@@ -139,3 +139,9 @@ let make_random_board =
     a
   in
   make_board_from_array (shuffle basic)
+
+let hex_info board n =
+  let x, y = hex_coords n in
+  match board.hexes.(x).(y) with
+  | Some a -> a
+  | None -> failwith "out of bounds"
