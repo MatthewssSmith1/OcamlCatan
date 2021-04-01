@@ -44,24 +44,47 @@ let rec print_raster =
   Array.iter (fun row ->
       Array.iter print_pixel row;
       print_endline "")
-      
-let edge_dir_offsets = 
-    [[(4,-1);(4,0);(5,0);(5,1);(6,1);(6,2)];
-    [(7,3);(7,4);(7,5)];
-    [(6,6);(6,7);(5,7);(5,8);(4,8);(4,9)];
-    [(2,9);(2,8);(1,8);(1,7);(0,7);(0,6)];
-    [(-1,5);(-1,4);(-1,3)];
-    [(0,2);(0,1);(1,1);(1,0);(2,0);(2,-1)]]
 
-let draw_road raster style dir coords =
-    let offsets = List.nth edge_dir_offsets dir in
-    List.iter (fun offset -> raster.(snd coords + snd offset).(fst coords + fst offset) <- { ansi_style = [ style ]; content = "  " }) offsets
+let team_color_to_ansi = function
+  | Types.Red -> on_red
+  | Types.Blue -> on_blue
+  | Types.Orange -> on_cyan
+  | Types.White -> on_white
 
-let vertex_dir_offsets = [(3,-1);(7,2);(7,6);(3,9);(-1,6);(-1,2)]
+let edge_dir_offsets =
+  [
+    [ (4, -1); (4, 0); (5, 0); (5, 1); (6, 1); (6, 2) ];
+    [ (7, 3); (7, 4); (7, 5) ];
+    [ (6, 6); (6, 7); (5, 7); (5, 8); (4, 8); (4, 9) ];
+    [ (2, 9); (2, 8); (1, 8); (1, 7); (0, 7); (0, 6) ];
+    [ (-1, 5); (-1, 4); (-1, 3) ];
+    [ (0, 2); (0, 1); (1, 1); (1, 0); (2, 0); (2, -1) ];
+  ]
 
-let draw_vertex raster style dir coords = 
-    let offset = List.nth vertex_dir_offsets dir in
-    raster.(snd coords + snd offset).(fst coords + fst offset) <- { ansi_style = [ style ]; content = "  " }
+let draw_road raster (edge : Types.edge) dir coords =
+  match edge with
+  | Empty -> ()
+  | Road color ->
+      let offsets = List.nth edge_dir_offsets dir in
+      List.iter
+        (fun offset ->
+          raster.(snd coords + snd offset).(fst coords + fst offset) <-
+            {
+              ansi_style = [ team_color_to_ansi color ];
+              content = "  ";
+            })
+        offsets
+
+let vertex_dir_offsets =
+  [ (3, -1); (7, 2); (7, 6); (3, 9); (-1, 6); (-1, 2) ]
+
+let draw_vertex raster (vertex : Types.vertex) dir coords =
+  match vertex with
+  | Empty -> ()
+  | _ ->
+      let offset = List.nth vertex_dir_offsets dir in
+      raster.(snd coords + snd offset).(fst coords + fst offset) <-
+        { ansi_style = [ on_cyan ]; content = "  " }
 
 let draw_hex raster style number coords =
   (* checks if the pixel is in one of the corners, cuts off corners of
@@ -82,29 +105,6 @@ let draw_hex raster style number coords =
     done
   done
 
-(** placed here just for testing purposes*)
-let hex_coords = function
-  | 0 -> (0, 1)
-  | 1 -> (0, 2)
-  | 2 -> (0, 3)
-  | 3 -> (1, 1)
-  | 4 -> (1, 2)
-  | 5 -> (1, 3)
-  | 6 -> (1, 4)
-  | 7 -> (2, 0)
-  | 8 -> (2, 1)
-  | 9 -> (2, 2)
-  | 10 -> (2, 3)
-  | 11 -> (2, 4)
-  | 12 -> (3, 1)
-  | 13 -> (3, 2)
-  | 14 -> (3, 3)
-  | 15 -> (3, 4)
-  | 16 -> (4, 1)
-  | 17 -> (4, 2)
-  | 18 -> (4, 3)
-  | _ -> failwith "out of bounds"
-
 let hex_to_pixel_coords hex_coords =
   let y = (fst hex_coords * 7) + 1 in
   (* offsets every other row by half a hex horizontally*)
@@ -112,21 +112,28 @@ let hex_to_pixel_coords hex_coords =
   let x = (snd hex_coords * 8) + row_shift in
   (x, y)
 
-let draw_board raster =
+let draw_board raster (board : Board.t) =
   for i = 0 to 18 do
+    let coords = Board.hex_coords i in
     let color =
       match List.nth_opt bg_colors (1 + Random.int 7) with
       | None -> ANSITerminal.default
       | Some c -> c
     in
-    i |> hex_coords |> hex_to_pixel_coords
-    |> draw_hex raster color (Random.int 12)
+    coords |> hex_to_pixel_coords
+    |> draw_hex raster color (Random.int 12);
+    List.iteri
+      (fun i v -> draw_vertex raster v i coords)
+      (Board.hex_to_vertices board i);
+    List.iteri
+      (fun i e -> draw_road raster e i coords)
+      (Board.hex_to_edges board i)
   done
 
-let print_board =
+let print_board (board : Board.t) =
   let r =
     Array.make_matrix 39 45
       { ansi_style = [ on_white ]; content = "  " }
   in
-  draw_board r;
+  draw_board r board;
   print_raster r

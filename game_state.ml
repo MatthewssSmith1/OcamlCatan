@@ -3,17 +3,18 @@ type t = {
   players : Player.t list;
 }
 
+let game_to_board game = game.board
 let make_new_game = 
-  {board = Board.make_random_board; players = []}
+  {board = Board.make_board; players = []}
 
 let add_player game_state color =
   {game_state with players = Player.make_player color :: game_state.players}
-
+(* 
 let distribute_resources = failwith "TODO"
 
 let next_move = failwith "TODO"
 
-let make_move = failwith "TODO"
+let make_move = failwith "TODO" *)
 
 (* type tResource =
   | Wood

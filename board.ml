@@ -55,7 +55,7 @@ let add_road player hex dir board =
   | Some (Road _) -> failwith "road already exists"
   | None -> failwith "out of bounds"
   | Some Empty ->
-      board.edges.(a).(b) = Some (Road (Player.get_color player));
+      board.edges.(a).(b) <- Some (Road (Player.get_color player));
       board
 
 let add_settlement player hex dir board =
@@ -64,8 +64,8 @@ let add_settlement player hex dir board =
   match board.vertices.(a).(b) with
   | None -> failwith "out of bounds"
   | Some Empty ->
-      board.vertices.(a).(b)
-      = Some (Settlement (Player.get_color player));
+      board.vertices.(a).(b) <-
+        Some (Settlement (Player.get_color player));
       board
   | _ -> failwith "already exists"
 
@@ -78,7 +78,7 @@ let upgrade_city player hex dir board =
   | Some (Settlement c) ->
       if c <> Player.get_color player then
         failwith "can't build city on wrong color"
-      else board.vertices.(a).(b) = Some (Settlement c);
+      else board.vertices.(a).(b) <- Some (Settlement c);
       board
   | Some (City _) -> failwith "can't build city on city"
 
@@ -92,12 +92,12 @@ let make_board_from_array tiles =
   in
   for i = 0 to 18 do
     let x, y = hex_coords i in
-    board.hexes.(x).(y) = Some tiles.(i);
+    board.hexes.(x).(y) <- Some tiles.(i);
     for j = 0 to 5 do
       let a, b = vertex_from_hex (x, y) j in
-      board.vertices.(a).(b) = Some Empty;
+      board.vertices.(a).(b) <- Some Empty;
       let c, d = edge_from_hex (x, y) j in
-      board.edges.(c).(d) = Some Empty
+      board.edges.(c).(d) <- Some Empty
     done
   done;
   board
@@ -157,7 +157,7 @@ let hex_to_vertices board n =
       let vertex =
         match board.vertices.(a).(b) with
         | Some v -> v
-        | _ -> failwith "out of bounds"
+        | None -> failwith " out of bounds"
       in
       vertex :: hex_to_vertices_helper (x + 1) acc
   in
