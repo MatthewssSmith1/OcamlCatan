@@ -2,7 +2,12 @@ type t = {
   board : Board.t;
   players : Player.t list;
 }
+
+let distribute_resources = failwith "TODO"
+
 let next_move = failwith "TODO"
+
+let make_move = failwith "TODO"
 
 (* type tResource =
   | Wood
