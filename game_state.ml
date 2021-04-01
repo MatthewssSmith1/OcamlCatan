@@ -1,4 +1,4 @@
-type t = ()
+type t = unit
 type resource =
   | Wood
   | Sheep
