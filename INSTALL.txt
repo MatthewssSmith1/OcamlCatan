@@ -1,0 +1,2 @@
+Our system can be installed just by downloading the code and running the appropriate make commands.
+It requires no additional OPAM packages. Since we are not implementing player interaction until MS2, we recomend importing the files into utop in order to interact with the board.
