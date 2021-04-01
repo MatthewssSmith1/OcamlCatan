@@ -79,3 +79,63 @@ let upgrade_city player hex dir board =
       else board.vertices.(a).(b) = Some (Settlement c);
       board
   | Some (City _) -> failwith "can't build city on city"
+
+let make_board_from_array tiles =
+  let board =
+    {
+      hexes = Array.make 5 (Array.make 5 None);
+      vertices = Array.make 6 (Array.make 11 None);
+      edges = Array.make 11 (Array.make 11 None);
+    }
+  in
+  for i = 0 to 18 do
+    let x, y = hex_coords i in
+    board.hexes.(x).(y) = Some tiles.(i);
+    for j = 0 to 5 do
+      let a, b = vertex_from_hex (x, y) j in
+      board.vertices.(a).(b) = Some Empty;
+      let c, d = edge_from_hex (x, y) j in
+      board.edges.(a).(b) = Some Empty
+    done
+  done;
+  board
+
+let basic =
+  Game_state.
+    [|
+      Other (10, Ore);
+      Other (2, Sheep);
+      Other (9, Wood);
+      Other (12, Wheat);
+      Other (6, Brick);
+      Other (4, Sheep);
+      Other (10, Brick);
+      Other (9, Wheat);
+      Other (11, Wood);
+      Desert;
+      Other (3, Wood);
+      Other (8, Ore);
+      Other (8, Wood);
+      Other (3, Ore);
+      Other (4, Wheat);
+      Other (5, Sheep);
+      Other (5, Brick);
+      Other (6, Wheat);
+      Other (11, Sheep);
+    |]
+
+let make_board = make_board_from_array basic
+
+let make_random_board =
+  let shuffle a =
+    let n = Array.length a in
+    let a = Array.copy a in
+    for i = n - 1 downto 1 do
+      let k = Random.int (i + 1) in
+      let x = a.(k) in
+      a.(k) <- a.(i);
+      a.(i) <- x
+    done;
+    a
+  in
+  make_board_from_array (shuffle basic)
