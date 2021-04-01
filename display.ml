@@ -48,7 +48,7 @@ let rec print_raster =
 let team_color_to_ansi = function
   | Types.Red -> on_red
   | Types.Blue -> on_blue
-  | Types.Orange -> on_cyan
+  | Types.Green -> on_cyan
   | Types.White -> on_white
 
 let edge_dir_offsets =

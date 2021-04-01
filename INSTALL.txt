@@ -1,2 +1,11 @@
-Our system can be installed just by downloading the code and running the appropriate make commands.
-It requires no additional OPAM packages. Since we are not implementing player interaction until MS2, we recomend importing the files into utop in order to interact with the board.
+Our system can be installed just by downloading the code and running the
+appropriate make commands.
+We do require the installation of the ANSITerminal package which can be done by
+running "opam install ANSITerminal" if not already.
+Since we are not implementing player interaction until MS2, we recomend
+importing the files into utop in order to interact with the game state.
+The following commands are supported:
+  make - builds the project and imports it all into utop 
+  make build - builds the project
+  make play - builds project and runs main function, creates new board and 
+              displays it
