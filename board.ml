@@ -95,7 +95,7 @@ let make_board_from_array tiles =
       let a, b = vertex_from_hex (x, y) j in
       board.vertices.(a).(b) = Some Empty;
       let c, d = edge_from_hex (x, y) j in
-      board.edges.(a).(b) = Some Empty
+      board.edges.(c).(d) = Some Empty
     done
   done;
   board
