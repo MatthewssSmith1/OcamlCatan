@@ -1,11 +1,21 @@
 type t
 
-val add_resource : (*resource*) int -> t -> t
+exception Not_enough_resources
 
-val remove_resource : (*resource*) int -> t -> t
+exception Not_enough_pieces
 
-val check_resource : (*resource*) int -> t -> t
+val add_resource : Game_state.resource -> int -> t -> t
 
-val add_port : (*port*) t -> t
+val remove_resource : Game_state.resource -> int -> t -> t
+
+val check_resource : Game_state.resource -> t -> int
+
+val add_port : Game_state.port -> t -> t
+
+val place_road : t -> t
+
+val place_settlement : t -> t
+
+val place_city : t -> t
 
 val make_player : t
