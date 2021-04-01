@@ -7,6 +7,8 @@ let game_to_board game = game.board
 let make_new_game = 
   {board = Board.make_board; players = []}
 
+let get_board t = t.board
+
 let add_player game_state color =
   {game_state with players = Player.make_player color :: game_state.players}
 (* 

@@ -15,7 +15,7 @@ type port =
 
 type color =
   | Red
-  | Orange
+  | Green
   | Blue
   | White
 
@@ -40,3 +40,9 @@ type trade_offer = {
   offer : resource list;
   request : resource list;
 }
+
+val resource_to_string : resource -> string
+
+val color_to_string : color -> string
+
+val dev_card_to_string : devCard -> string
