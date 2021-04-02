@@ -7,9 +7,6 @@ let game_to_board game = game.board
 let make_new_game = 
   {board = Board.make_random_board (); players = []}
 
-let make_game_from_hexes hexes =
-  {board = Board.make_board hexes; players = []}
-
 let game_to_players game = game.players
 
 let add_player game_state color =

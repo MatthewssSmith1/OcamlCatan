@@ -2,8 +2,6 @@ type t
 
 val make_new_game : t
 
-val make_game_from_hexes : Types.hex list -> t
-
 val game_to_board : t -> Board.t
 
 (** Requires that a player of the given color has not been added before *)
