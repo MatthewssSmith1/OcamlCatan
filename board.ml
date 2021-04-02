@@ -85,14 +85,19 @@ let upgrade_city player hex dir board =
 let make_board_from_array tiles =
   let board =
     {
-      hexes = Array.make 5 (Array.make 5 None);
-      vertices = Array.make 6 (Array.make 11 None);
-      edges = Array.make 11 (Array.make 11 None);
+      (* hexes = Array.make 5 (Array.make 5 None); *)
+      hexes = Array.make_matrix 5 5 None;
+      (* vertices = Array.make 6 (Array.make 11 None); *)
+      vertices = Array.make_matrix 6 11 None;
+      (* edges = Array.make 11 (Array.make 11 None); *)
+      edges = Array.make_matrix 11 11 None;
     }
   in
   for i = 0 to 18 do
     let x, y = hex_coords i in
     board.hexes.(x).(y) <- Some tiles.(i);
+    (* print_endline (string_of_int x ^ ", " ^ string_of_int y ^ ", " ^
+       Types.hex_to_string tiles.(i)); *)
     for j = 0 to 5 do
       let a, b = vertex_from_hex (x, y) j in
       board.vertices.(a).(b) <- Some Empty;
@@ -143,10 +148,11 @@ let make_random_board () =
   make_board_from_array (shuffle basic)
 
 let hex_info board n =
-  (* let x, y = hex_coords n in match board.hexes.(x).(y) with | Some a
-     -> (* print_endline (string_of_bool (basic.(n) = a)); *) a | None
-     -> failwith "out of bounds" *)
-  basic.(n)
+  let x, y = hex_coords n in
+  (* match board.hexes.(x).(y) with *)
+  match Array.get (Array.get board.hexes x) y with
+  | Some a -> a
+  | None -> failwith "out of bounds"
 
 let hex_to_vertices board n =
   let coords = hex_coords n in
