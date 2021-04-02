@@ -76,12 +76,13 @@ let draw_road raster (edge : Types.edge) dir coords =
       let offsets = List.nth edge_dir_offsets dir in
       List.iter
         (fun offset ->
-          try 
-          raster.(snd coords + snd offset).(fst coords + fst offset) <-
-            {
-              ansi_style = [ team_color_to_ansi team_color ];
-              content = "  ";
-            } with _ -> ())
+          try
+            raster.(snd coords + snd offset).(fst coords + fst offset) <-
+              {
+                ansi_style = [ team_color_to_ansi team_color ];
+                content = "  ";
+              }
+          with _ -> ())
         offsets
 
 let vertex_dir_offsets =
@@ -129,16 +130,13 @@ let hex_to_pixel_coords hex_coords =
 
 let draw_board raster (board : Board.t) =
   for i = 0 to 18 do
-    (* print_endline
-      ( match Board.hex_info board i with
-      | Types.Desert -> "desert"
-      | Other (h, k) -> Types.resource_to_string k ); *)
+    (*print_endline (match Board.hex_info board i with | Types.Desert ->
+      "desert" | Other (h, k) -> Types.resource_to_string k);*)
     let coords = Board.hex_coords i in
-    let color = hex_to_ansi_color (Board.hex_info board i) in
+    let hex_info = Board.hex_info board i in
+    let color = hex_to_ansi_color hex_info in
     let number =
-      match Board.hex_info board i with
-      | Types.Desert -> 7
-      | Other (x, _) -> x
+      match hex_info with Types.Desert -> 7 | Other (x, _) -> x
     in
     coords |> hex_to_pixel_coords |> draw_hex raster color number;
     (* List.iteri (fun i vertex -> draw_vertex raster vertex i coords)

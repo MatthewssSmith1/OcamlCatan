@@ -63,3 +63,8 @@ let dev_card_to_string card =
   | YearOfPlenty -> "Year of Plenty"
   | Monopoly -> "Monopoly"
   | VictoryPoint -> "Victory Point"
+
+let hex_to_string hex =
+  match hex with
+  | Desert -> "Desert"
+  | Other (x, y) -> string_of_int x ^ resource_to_string y
