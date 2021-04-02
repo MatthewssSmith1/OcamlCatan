@@ -1,1 +1,1 @@
-type move = ()
+type move = unit
