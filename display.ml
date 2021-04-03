@@ -2,17 +2,6 @@ open ANSITerminal
 
 (** ANSI functions:
     https://github.com/Chris00/ANSITerminal/blob/master/src/ANSITerminal.mli *)
-let bg_colors =
-  [
-    on_white;
-    on_black;
-    on_red;
-    on_green;
-    on_yellow;
-    on_blue;
-    on_magenta;
-    on_cyan;
-  ]
 
 let numbers =
   [
@@ -59,6 +48,13 @@ let hex_to_ansi_color = function
   | Types.Other (_, Types.Ore) -> on_magenta
   | Types.Other (_, Types.Sheep) -> on_cyan
 
+let hex_to_pixel_coords hex_coords =
+  let y = (fst hex_coords * 7) + 1 in
+  (* offsets every other row by half a hex horizontally*)
+  let row_shift = if y mod 2 == 0 then -1 else 3 in
+  let x = (snd hex_coords * 8) + row_shift in
+  (x, y)
+
 let edge_dir_offsets =
   [
     [ (4, -1); (4, 0); (5, 0); (5, 1); (6, 1); (6, 2) ];
@@ -70,35 +66,55 @@ let edge_dir_offsets =
   ]
 
 let draw_road raster (edge : Types.edge) dir coords =
+  (* used for debugging, draw all road around a certain hex *)
+  (* let (edge : Types.edge) = match coords with 1, 3 -> Types.Road
+     Types.Red | _ -> edge in *)
   match edge with
   | Empty -> ()
   | Road team_color ->
-      let offsets = List.nth edge_dir_offsets dir in
-      List.iter
-        (fun offset ->
-          try
-            raster.(snd coords + snd offset).(fst coords + fst offset) <-
-              {
-                ansi_style = [ team_color_to_ansi team_color ];
-                content = "  ";
-              }
-          with _ -> ())
-        offsets
+      print_endline
+        (string_of_int (fst coords) ^ ", " ^ string_of_int (snd coords));
+
+      let pixel_coords = hex_to_pixel_coords coords in
+      let draw_offset offset =
+        try
+          raster.(snd pixel_coords + snd offset).(fst pixel_coords
+                                                  + fst offset) <-
+            {
+              ansi_style = [ team_color_to_ansi team_color ];
+              content = "  ";
+            }
+        with _ -> ()
+      in
+      List.iter draw_offset (List.nth edge_dir_offsets dir)
 
 let vertex_dir_offsets =
   [ (3, -1); (7, 2); (7, 6); (3, 9); (-1, 6); (-1, 2) ]
 
 let draw_vertex raster (vertex : Types.vertex) dir coords =
   let color =
+    (* used for debugging, draw all verticies around a certain hex *)
+    (* match coords with | 1, 3 -> on_cyan | _ -> *)
     match vertex with
     | Empty -> on_white
     | Settlement team_color -> team_color_to_ansi team_color
     | City team_color -> team_color_to_ansi team_color
   in
-
-  let offset = List.nth vertex_dir_offsets dir in
-  raster.(snd coords + snd offset).(fst coords + fst offset) <-
-    { ansi_style = [ color ]; content = "  " }
+  if color != on_white then
+    let _ =
+      print_endline
+        ("vertex"
+        ^ string_of_int (fst coords)
+        ^ ", "
+        ^ string_of_int (snd coords))
+    in
+    let offset = List.nth vertex_dir_offsets dir in
+    let pixel_coords = hex_to_pixel_coords coords in
+    let x = fst pixel_coords + fst offset in
+    let y = snd pixel_coords + snd offset in
+    try raster.(y).(x) <- { ansi_style = [ color ]; content = "  " }
+    with _ -> ()
+  else ()
 
 let draw_hex raster style number coords =
   (* checks if the pixel is in one of the corners, cuts off corners of
@@ -121,13 +137,6 @@ let draw_hex raster style number coords =
     done
   done
 
-let hex_to_pixel_coords hex_coords =
-  let y = (fst hex_coords * 7) + 1 in
-  (* offsets every other row by half a hex horizontally*)
-  let row_shift = if y mod 2 == 0 then -1 else 3 in
-  let x = (snd hex_coords * 8) + row_shift in
-  (x, y)
-
 let draw_board raster (board : Board.t) =
   for i = 0 to 18 do
     (*print_endline (match Board.hex_info board i with | Types.Desert ->
@@ -139,8 +148,9 @@ let draw_board raster (board : Board.t) =
       match hex_info with Types.Desert -> 7 | Other (x, _) -> x
     in
     coords |> hex_to_pixel_coords |> draw_hex raster color number;
-    (* List.iteri (fun i vertex -> draw_vertex raster vertex i coords)
-       (Board.hex_to_vertices board i); *)
+    List.iteri
+      (fun i vertex -> draw_vertex raster vertex i coords)
+      (Board.hex_to_vertices board i);
     List.iteri
       (fun i e -> draw_road raster e i coords)
       (Board.hex_to_edges board i)
