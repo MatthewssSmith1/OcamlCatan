@@ -7,4 +7,5 @@
 #load "board.cmo";;
 #load "game_state.cmo";;
 #load "display.cmo";;
+#load "window_display.cmo";;
 #load "input.cmo";;

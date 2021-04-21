@@ -68,3 +68,5 @@ let hex_to_string hex =
   match hex with
   | Desert -> "Desert"
   | Other (x, y) -> string_of_int x ^ " " ^ resource_to_string y
+
+let number_of_hex = function Desert -> 7 | Other (x, _) -> x

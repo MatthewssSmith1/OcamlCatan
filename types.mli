@@ -48,3 +48,5 @@ val color_to_string : color -> string
 val dev_card_to_string : devCard -> string
 
 val hex_to_string : hex -> string
+
+val number_of_hex : hex -> int

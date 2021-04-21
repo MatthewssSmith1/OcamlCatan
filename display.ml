@@ -1,5 +1,4 @@
 open ANSITerminal
-open Graphics
 
 (** ANSI functions:
     https://github.com/Chris00/ANSITerminal/blob/master/src/ANSITerminal.mli *)
