@@ -1,5 +1,6 @@
 #require "ounit2";;
 #require "ANSITerminal";;
+#require "Graphics";;
 #directory "_build";;
 #load "types.cmo"
 #load "player.cmo";;

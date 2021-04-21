@@ -1,4 +1,5 @@
 open ANSITerminal
+open Graphics
 
 (** ANSI functions:
     https://github.com/Chris00/ANSITerminal/blob/master/src/ANSITerminal.mli *)
@@ -132,7 +133,9 @@ let draw_hex raster style number coords =
         in
         let x = fst coords + i in
         let y = snd coords + j in
-        try raster.(y).(x) <- { ansi_style = [ style; black ]; content }
+        try
+          raster.(y).(x) <-
+            { ansi_style = [ style; ANSITerminal.black ]; content }
         with _ -> ()
     done
   done
