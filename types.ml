@@ -15,7 +15,7 @@ type port =
 
 type color =
   | Red
-  | Green
+  | Orange
   | Blue
   | White
 
@@ -52,7 +52,7 @@ let resource_to_string resource =
 let color_to_string color =
   match color with
   | Red -> "Red"
-  | Green -> "Green"
+  | Orange -> "Orange"
   | Blue -> "Blue"
   | White -> "White"
 

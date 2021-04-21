@@ -15,7 +15,7 @@ type port =
 
 type color =
   | Red
-  | Green
+  | Orange
   | Blue
   | White
 

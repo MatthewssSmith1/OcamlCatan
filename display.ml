@@ -37,7 +37,7 @@ let rec print_raster =
 let team_color_to_ansi = function
   | Types.Red -> on_red
   | Types.Blue -> on_blue
-  | Types.Green -> on_cyan
+  | Types.Orange -> on_cyan
   | Types.White -> on_white
 
 let hex_to_ansi_color = function
