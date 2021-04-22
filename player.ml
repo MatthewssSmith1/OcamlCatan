@@ -4,7 +4,11 @@ type t = {
   wheat : int;
   brick : int;
   ore : int;
-  devs : Types.devCard list;
+  knight : int;
+  roadBuilding : int;
+  yearOfPlenty : int;
+  monopoly : int;
+  victoryPoint : int;
   settlements : int;
   cities : int;
   roads : int;
@@ -62,8 +66,7 @@ let place_city player =
       settlements = player.settlements + 1;
     }
 
-let get_color player =
-  player.color
+let get_color player = player.color
 
 let make_player some_color =
   {
@@ -72,7 +75,11 @@ let make_player some_color =
     wheat = 0;
     brick = 0;
     ore = 0;
-    devs = [];
+    knight = 0;
+    roadBuilding = 0;
+    yearOfPlenty = 0;
+    monopoly = 0;
+    victoryPoint = 0;
     roads = 15;
     settlements = 5;
     cities = 4;
@@ -80,27 +87,36 @@ let make_player some_color =
     color = some_color;
   }
 
-  let pp_list pp_elt lst =
-    let pp_elts lst =
-      let rec loop n acc = function
-        | [] -> acc
-        | [ h ] -> acc ^ pp_elt h
-        | h1 :: (h2 :: t as t') ->
-            if n = 100 then acc ^ "..." (* stop printing long list *)
-            else loop (n + 1) (acc ^ pp_elt h1 ^ "; ") t'
-      in
-      loop 0 "" lst
+let pp_list pp_elt lst =
+  let pp_elts lst =
+    let rec loop n acc = function
+      | [] -> acc
+      | [ h ] -> acc ^ pp_elt h
+      | h1 :: (h2 :: t as t') ->
+          if n = 100 then acc ^ "..." (* stop printing long list *)
+          else loop (n + 1) (acc ^ pp_elt h1 ^ "; ") t'
     in
-    "[" ^ pp_elts lst ^ "]"
-  
-  let to_string t =
-    "Color: " ^ Types.color_to_string t.color ^
-    "Wood: " ^ string_of_int t.wood ^
-    "Sheep: " ^ string_of_int t.sheep ^
-    "Wheat: " ^ string_of_int t.wheat ^
-    "Brick: " ^ string_of_int t.brick ^
-    "Ore: " ^ string_of_int t.ore ^ "\n" ^
-    "Development Cards: " ^ pp_list Types.dev_card_to_string t.devs ^ "\n" ^
-    "Remaining Roads: " ^ string_of_int t.roads ^
-    "Remaining Settlements: " ^ string_of_int t.settlements ^
-    "Remaining Cities: " ^ string_of_int t.cities
+    loop 0 "" lst
+  in
+  "[" ^ pp_elts lst ^ "]"
+
+let to_string t =
+  "Color: "
+  ^ Types.color_to_string t.color
+  (*Resources*)
+  ^ "Wood: "
+  ^ string_of_int t.wood ^ "Sheep: " ^ string_of_int t.sheep ^ "Wheat: "
+  ^ string_of_int t.wheat ^ "Brick: " ^ string_of_int t.brick ^ "Ore: "
+  ^ string_of_int t.ore ^ "\n" (*Dev Cards*) ^ "Knights: "
+  ^ string_of_int t.knight ^ "Road Buildings: "
+  ^ string_of_int t.roadBuilding
+  ^ "Year of Plenties: "
+  ^ string_of_int t.yearOfPlenty
+  ^ "Monopolies: "
+  ^ string_of_int t.monopoly
+  ^ "Victory Points: "
+  ^ string_of_int t.victoryPoint
+  ^ "\n" (*Remaining*) ^ "Remaining Roads: "
+  ^ string_of_int t.roads ^ "Remaining Settlements: "
+  ^ string_of_int t.settlements
+  ^ "Remaining Cities: " ^ string_of_int t.cities
