@@ -183,3 +183,15 @@ let hex_to_edges board n =
       edge :: hex_to_edges_helper (x + 1) acc
   in
   hex_to_edges_helper 0 []
+
+let int_to_hex_list board input =
+  let rec helper board input counter =
+    if counter > 18 then []
+    else
+      match hex_info board counter with
+      | Desert -> helper board input (counter + 1)
+      | Other (x, y) as hex ->
+          if x = input then hex :: helper board input (counter + 1)
+          else helper board input (counter + 1)
+  in
+  helper board input 0

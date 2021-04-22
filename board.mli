@@ -17,3 +17,5 @@ val hex_to_vertices : t -> int -> Types.vertex list
 val hex_to_edges : t -> int -> Types.edge list
 
 val hex_coords : int -> int * int
+
+val int_to_hex_list : t -> int -> Types.hex list

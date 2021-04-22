@@ -11,9 +11,13 @@ let game_to_players game = game.players
 
 let add_player game_state color =
   {game_state with players = Player.make_player color :: game_state.players}
-(* 
-let distribute_resources = failwith "TODO"
 
+let distribute_resources state input = 
+  let hex_lst = Board.int_to_hex_list (game_to_board state) input in
+  (*Finish Later*)
+  state
+
+(*
 let next_move = failwith "TODO"
 
 let make_move = failwith "TODO" *)
