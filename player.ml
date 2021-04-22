@@ -16,9 +16,11 @@ type t = {
   color : Types.color;
 }
 
-exception Not_enough_resources
+exception Not_Enough_Resources
 
-exception Not_enough_pieces
+exception Not_Enough_Devs
+
+exception Not_Enough_Pieces
 
 let add_resource resource amount player =
   match resource with
@@ -38,7 +40,7 @@ let check_resource resource player =
 
 let remove_resource resource amount player =
   if check_resource resource player < amount then
-    raise Not_enough_resources
+    raise Not_Enough_Resources
   else
     match resource with
     | Types.Wood -> { player with wood = player.wood - amount }
@@ -47,18 +49,52 @@ let remove_resource resource amount player =
     | Types.Brick -> { player with brick = player.brick - amount }
     | Types.Ore -> { player with ore = player.ore - amount }
 
+let add_dev dev amount player =
+  match dev with
+  | Types.Knight -> { player with knight = player.knight + amount }
+  | Types.RoadBuilding ->
+      { player with roadBuilding = player.roadBuilding + amount }
+  | Types.YearOfPlenty ->
+      { player with yearOfPlenty = player.yearOfPlenty + amount }
+  | Types.Monopoly ->
+      { player with monopoly = player.monopoly + amount }
+  | Types.VictoryPoint ->
+      { player with victoryPoint = player.victoryPoint + amount }
+
+let check_dev dev player =
+  match dev with
+  | Types.Knight -> player.knight
+  | Types.RoadBuilding -> player.roadBuilding
+  | Types.YearOfPlenty -> player.yearOfPlenty
+  | Types.Monopoly -> player.monopoly
+  | Types.VictoryPoint -> player.victoryPoint
+
+let remove_dev dev amount player =
+  if check_dev dev player < amount then raise Not_Enough_Devs
+  else
+    match dev with
+    | Types.Knight -> { player with knight = player.knight - amount }
+    | Types.RoadBuilding ->
+        { player with roadBuilding = player.roadBuilding - amount }
+    | Types.YearOfPlenty ->
+        { player with yearOfPlenty = player.yearOfPlenty - amount }
+    | Types.Monopoly ->
+        { player with monopoly = player.monopoly - amount }
+    | Types.VictoryPoint ->
+        { player with victoryPoint = player.victoryPoint - amount }
+
 let add_port port player = { player with ports = port :: player.ports }
 
 let place_road player =
-  if player.roads < 1 then raise Not_enough_pieces
+  if player.roads < 1 then raise Not_Enough_Pieces
   else { player with roads = player.roads - 1 }
 
 let place_settlement player =
-  if player.settlements < 1 then raise Not_enough_pieces
+  if player.settlements < 1 then raise Not_Enough_Pieces
   else { player with settlements = player.settlements - 1 }
 
 let place_city player =
-  if player.cities < 1 then raise Not_enough_pieces
+  if player.cities < 1 then raise Not_Enough_Pieces
   else
     {
       player with

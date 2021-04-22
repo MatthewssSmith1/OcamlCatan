@@ -1,14 +1,22 @@
 type t
 
-exception Not_enough_resources
+exception Not_Enough_Resources
 
-exception Not_enough_pieces
+exception Not_Enough_Devs
+
+exception Not_Enough_Pieces
 
 val add_resource : Types.resource -> int -> t -> t
 
 val remove_resource : Types.resource -> int -> t -> t
 
 val check_resource : Types.resource -> t -> int
+
+val add_dev : Types.devCard -> int -> t -> t
+
+val remove_dev : Types.devCard -> int -> t -> t
+
+val check_dev : Types.devCard -> t -> int
 
 val add_port : Types.port -> t -> t
 
