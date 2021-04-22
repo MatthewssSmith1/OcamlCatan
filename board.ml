@@ -190,8 +190,8 @@ let int_to_hex_list board input =
     else
       match hex_info board counter with
       | Desert -> helper board input (counter + 1)
-      | Other (x, y) as hex ->
-          if x = input then hex :: helper board input (counter + 1)
+      | Other (x, y) ->
+          if x = input then counter :: helper board input (counter + 1)
           else helper board input (counter + 1)
   in
   helper board input 0
