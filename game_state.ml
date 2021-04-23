@@ -1,11 +1,12 @@
 type t = {
   board : Board.t;
   players : Player.t list;
+  trades : Types.trade_offer list;
 }
 
 let game_to_board game = game.board
 let make_new_game = 
-  {board = Board.make_random_board (); players = []}
+  {board = Board.make_random_board (); players = []; trades = []}
 
 let game_to_players game = game.players
 
@@ -52,6 +53,9 @@ let get_player state color =
       | Other (_, res) -> let resource = res in
       vert_helper state verts resource in
     hex_helper state hexes
+
+  let build_road state color hex dir =
+    state
 
 (*
 let next_move = failwith "TODO"
