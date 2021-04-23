@@ -6,6 +6,8 @@ val add_settlement : Player.t -> int -> int -> t -> t
 
 val upgrade_city : Player.t -> int -> int -> t -> t
 
+val move_robber : int -> t -> t
+
 val make_board : unit -> t
 
 val make_random_board : unit -> t
