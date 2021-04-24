@@ -9,6 +9,10 @@ type t = {
   yearOfPlenty : int;
   monopoly : int;
   victoryPoint : int;
+  newKnight : int;
+  newRoadBuilding : int;
+  newYearOfPlenty : int;
+  newMonopoly : int;
   settlements : int;
   cities : int;
   roads : int;
@@ -21,6 +25,19 @@ exception Not_Enough_Resources
 exception Not_Enough_Devs
 
 exception Not_Enough_Pieces
+
+let can_add_road player =
+  player.roads >= 1 && player.brick >= 1 && player.wood >= 1
+
+let can_add_settlement player =
+  player.settlements >= 1 && player.brick >= 1 && player.wood >= 1
+  && player.sheep >= 1 && player.wheat >= 1
+
+let can_add_city player =
+  player.cities >= 1 && player.ore >= 3 && player.wheat >= 2
+
+let can_add_dev player =
+  player.sheep >= 1 && player.ore >= 1 && player.wheat >= 1
 
 let add_resource resource amount player =
   match resource with
@@ -53,11 +70,11 @@ let add_dev dev amount player =
   match dev with
   | Types.Knight -> { player with knight = player.knight + amount }
   | Types.RoadBuilding ->
-      { player with roadBuilding = player.roadBuilding + amount }
+      { player with newRoadBuilding = player.newRoadBuilding + amount }
   | Types.YearOfPlenty ->
-      { player with yearOfPlenty = player.yearOfPlenty + amount }
+      { player with newYearOfPlenty = player.newYearOfPlenty + amount }
   | Types.Monopoly ->
-      { player with monopoly = player.monopoly + amount }
+      { player with newMonopoly = player.newMonopoly + amount }
   | Types.VictoryPoint ->
       { player with victoryPoint = player.victoryPoint + amount }
 
@@ -86,21 +103,51 @@ let remove_dev dev amount player =
 let add_port port player = { player with ports = port :: player.ports }
 
 let place_road player =
-  if player.roads < 1 then raise Not_Enough_Pieces
-  else { player with roads = player.roads - 1 }
+  if not (player.roads >= 1) then raise Not_Enough_Pieces
+  else if not (player.brick >= 1 && player.wood >= 1) then
+    raise Not_Enough_Resources
+  else
+    {
+      player with
+      roads = player.roads - 1;
+      brick = player.brick - 1;
+      wood = player.wood - 1;
+    }
 
 let place_settlement player =
-  if player.settlements < 1 then raise Not_Enough_Pieces
-  else { player with settlements = player.settlements - 1 }
+  if not (player.settlements >= 1) then raise Not_Enough_Pieces
+  else if
+    not
+      (player.brick >= 1 && player.wood >= 1 && player.sheep >= 1
+     && player.wheat >= 1)
+  then raise Not_Enough_Resources
+  else
+    {
+      player with
+      settlements = player.settlements - 1;
+      brick = player.brick - 1;
+      wood = player.wood - 1;
+      sheep = player.sheep - 1;
+      wheat = player.wheat - 1;
+    }
 
 let place_city player =
-  if player.cities < 1 then raise Not_Enough_Pieces
+  if not (player.cities >= 1) then raise Not_Enough_Pieces
+  else if not (player.ore >= 3 && player.wheat >= 2) then
+    raise Not_Enough_Resources
   else
     {
       player with
       cities = player.cities - 1;
       settlements = player.settlements + 1;
+      ore = player.ore - 3;
+      wheat = player.wheat - 2;
     }
+
+let buy_dev player dev =
+  if not (player.sheep >= 1 && player.ore >= 1 && player.wheat >= 1)
+  then raise Not_Enough_Resources
+  else add_dev dev 1 player
 
 let get_color player = player.color
 
@@ -115,12 +162,29 @@ let make_player some_color =
     roadBuilding = 0;
     yearOfPlenty = 0;
     monopoly = 0;
+    newKnight = 0;
+    newRoadBuilding = 0;
+    newYearOfPlenty = 0;
+    newMonopoly = 0;
     victoryPoint = 0;
     roads = 15;
     settlements = 5;
     cities = 4;
     ports = [];
     color = some_color;
+  }
+
+let end_turn player =
+  {
+    player with
+    knight = player.knight + player.newKnight;
+    roadBuilding = player.roadBuilding + player.newRoadBuilding;
+    yearOfPlenty = player.yearOfPlenty + player.newYearOfPlenty;
+    monopoly = player.monopoly + player.newMonopoly;
+    newKnight = 0;
+    newRoadBuilding = 0;
+    newYearOfPlenty = 0;
+    newMonopoly = 0;
   }
 
 let pp_list pp_elt lst =
@@ -143,7 +207,7 @@ let to_string t =
   ^ "Wood: "
   ^ string_of_int t.wood ^ "Sheep: " ^ string_of_int t.sheep ^ "Wheat: "
   ^ string_of_int t.wheat ^ "Brick: " ^ string_of_int t.brick ^ "Ore: "
-  ^ string_of_int t.ore ^ "\n" (*Dev Cards*) ^ "Knights: "
+  ^ string_of_int t.ore ^ "\n" (*Playable Dev Cards*) ^ "Knights: "
   ^ string_of_int t.knight ^ "Road Buildings: "
   ^ string_of_int t.roadBuilding
   ^ "Year of Plenties: "
@@ -152,6 +216,13 @@ let to_string t =
   ^ string_of_int t.monopoly
   ^ "Victory Points: "
   ^ string_of_int t.victoryPoint
+  ^ "\n" (*Unplayable Dev Cards*) ^ "New Knights: "
+  ^ string_of_int t.knight ^ "New Road Buildings: "
+  ^ string_of_int t.roadBuilding
+  ^ "New Year of Plenties: "
+  ^ string_of_int t.yearOfPlenty
+  ^ "New Monopolies: "
+  ^ string_of_int t.monopoly
   ^ "\n" (*Remaining*) ^ "Remaining Roads: "
   ^ string_of_int t.roads ^ "Remaining Settlements: "
   ^ string_of_int t.settlements
