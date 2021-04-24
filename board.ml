@@ -34,6 +34,17 @@ let hex_info board n =
   | Some a -> a
   | None -> failwith "out of bounds"
 
+let hex_from_hex (x, y) dir =
+  let offset = -(x mod 2) in
+  match dir with
+  | 0 -> (2 * x, (2 * y) + 1 + offset)
+  | 1 -> ((2 * x) + 1, (2 * y) + 2 + offset)
+  | 2 -> ((2 * x) + 2, (2 * y) + 1 + offset)
+  | 3 -> ((2 * x) + 2, (2 * y) + offset)
+  | 4 -> ((2 * x) + 1, (2 * y) + offset)
+  | 5 -> (2 * x, (2 * y) + offset)
+  | _ -> failwith "dir not in [0,5]"
+
 let edge_from_hex (x, y) dir =
   let offset = -(x mod 2) in
   match dir with
@@ -76,17 +87,9 @@ let has_settlement player hex dir board =
   | None -> false
   | Some Empty -> false
 
-let vert_to_adj_edges hex dir board =
-  let right_coord = edge_from_hex (hex_coords hex) dir in
-  let left_coord = edge_from_hex (hex_coords hex) ((dir + 5) mod 6) in
-  let far_coord = (0, 0) in
-  failwith "not done"
+let can_add_road player hex dir board = failwith "Unimplemented"
 
-let edge_to_adj_edges hex dir board = failwith "unimplemented"
-
-(* let can_add_road player hex dir board = let coords = hex_coords hex
-   in let a, b = edge_from_hex coords dir in match board.edges.(a).(b)
-   with | Some (Road _) -> false | None -> false | Some Empty -> *)
+let can_add_settlement player hex dir board = failwith "Unimplemented"
 
 let add_road player hex dir board =
   let coords = hex_coords hex in

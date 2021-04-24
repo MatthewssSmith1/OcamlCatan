@@ -6,6 +6,12 @@ val add_settlement : Player.t -> int -> int -> t -> t
 
 val upgrade_city : Player.t -> int -> int -> t -> t
 
+(*Check for adj roads/settlements/cities*)
+val can_add_road : Player.t -> int -> int -> t -> bool
+
+(*Check for adj roads and no adj settlements/cities*)
+val can_add_settlement : Player.t -> int -> int -> t -> bool
+
 val move_robber : int -> t -> t
 
 val make_board : unit -> t
