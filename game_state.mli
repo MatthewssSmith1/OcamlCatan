@@ -4,6 +4,10 @@ val make_new_game : t
 
 val game_to_board : t -> Board.t
 
+val next_turn : t -> t
+
+val current_turn : t -> Player.t
+
 (** Requires that a player of the given color has not been added before *)
 val add_player : t -> Types.color -> t
 
