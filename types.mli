@@ -41,6 +41,14 @@ type trade_offer = {
   request : resource list;
 }
 
+type turnCommand = 
+  | BuildRoad of (int * int) (*hex index, dir*)
+  | BuildSettlement of (int * int)(*hex index, dir*)
+  | UpgradeCity of (int * int)(*hex index, dir*)
+  | OfferTrade of (color * resource list * resource list) (*trading partner, resources offered, resources wnated*)
+  | BuyDevCard
+  | UseDevCard of devCard
+
 val resource_to_string : resource -> string
 
 val color_to_string : color -> string

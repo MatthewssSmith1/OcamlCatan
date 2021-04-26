@@ -2,6 +2,7 @@ type t = {
   hexes : Types.hex option array array;
   vertices : Types.vertex option array array;
   edges : Types.edge option array array;
+  robber : int;
 }
 
 let hex_coords = function
@@ -26,6 +27,24 @@ let hex_coords = function
   | 18 -> (4, 3)
   | _ -> failwith "out of bounds"
 
+let hex_info board n =
+  let x, y = hex_coords n in
+  (* match board.hexes.(x).(y) with *)
+  match Array.get (Array.get board.hexes x) y with
+  | Some a -> a
+  | None -> failwith "out of bounds"
+
+let hex_from_hex (x, y) dir =
+  let offset = -(x mod 2) in
+  match dir with
+  | 0 -> (2 * x, (2 * y) + 1 + offset)
+  | 1 -> ((2 * x) + 1, (2 * y) + 2 + offset)
+  | 2 -> ((2 * x) + 2, (2 * y) + 1 + offset)
+  | 3 -> ((2 * x) + 2, (2 * y) + offset)
+  | 4 -> ((2 * x) + 1, (2 * y) + offset)
+  | 5 -> (2 * x, (2 * y) + offset)
+  | _ -> failwith "dir not in [0,5]"
+
 let edge_from_hex (x, y) dir =
   let offset = -(x mod 2) in
   match dir with
@@ -47,6 +66,30 @@ let vertex_from_hex (x, y) dir =
   | 4 -> (x + 1, (2 * y) + offset)
   | 5 -> (x, (2 * y) + offset)
   | _ -> failwith "dir not in [0,5]"
+
+let has_road player hex dir board =
+  let coords = hex_coords hex in
+  let a, b = edge_from_hex coords dir in
+  match board.edges.(a).(b) with
+  | Some (Road color) ->
+      if Player.get_color player = color then true else false
+  | None -> false
+  | Some Empty -> false
+
+let has_settlement player hex dir board =
+  let coords = hex_coords hex in
+  let a, b = vertex_from_hex coords dir in
+  match board.vertices.(a).(b) with
+  | Some (Settlement color) ->
+      if Player.get_color player = color then true else false
+  | Some (City color) ->
+      if Player.get_color player = color then true else false
+  | None -> false
+  | Some Empty -> false
+
+let can_add_road player hex dir board = failwith "Unimplemented"
+
+let can_add_settlement player hex dir board = failwith "Unimplemented"
 
 let add_road player hex dir board =
   let coords = hex_coords hex in
@@ -82,6 +125,16 @@ let upgrade_city player hex dir board =
       board
   | Some (City _) -> failwith "can't build city on city"
 
+let move_robber hex state = { state with robber = hex }
+
+let find_desert board =
+  let rec desert_helper board counter =
+    if counter > 18 then failwith "Desert not found"
+    else if hex_info board counter = Types.Desert then counter
+    else desert_helper board (counter + 1)
+  in
+  desert_helper board 0
+
 let make_board_from_array tiles =
   let board =
     {
@@ -91,6 +144,7 @@ let make_board_from_array tiles =
       vertices = Array.make_matrix 6 11 None;
       (* edges = Array.make 11 (Array.make 11 None); *)
       edges = Array.make_matrix 11 11 None;
+      robber = -1;
     }
   in
   for i = 0 to 18 do
@@ -105,7 +159,7 @@ let make_board_from_array tiles =
       board.edges.(c).(d) <- Some Empty
     done
   done;
-  board
+  { board with robber = find_desert board }
 
 let basic =
   Types.
@@ -147,13 +201,6 @@ let make_random_board () =
   in
   make_board_from_array (shuffle basic)
 
-let hex_info board n =
-  let x, y = hex_coords n in
-  (* match board.hexes.(x).(y) with *)
-  match Array.get (Array.get board.hexes x) y with
-  | Some a -> a
-  | None -> failwith "out of bounds"
-
 let hex_to_vertices board n =
   let coords = hex_coords n in
   let rec hex_to_vertices_helper x acc =
@@ -183,3 +230,16 @@ let hex_to_edges board n =
       edge :: hex_to_edges_helper (x + 1) acc
   in
   hex_to_edges_helper 0 []
+
+let int_to_hex_list board input =
+  let rec helper board input counter =
+    if counter > 18 then []
+    else
+      match hex_info board counter with
+      | Desert -> helper board input (counter + 1)
+      | Other (x, y) ->
+          if x = input && counter != board.robber then
+            counter :: helper board input (counter + 1)
+          else helper board input (counter + 1)
+  in
+  helper board input 0

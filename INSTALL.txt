@@ -1,3 +1,5 @@
+We require the installation of the graphics package which can be done by
+running "opam install graphics" if not already.
 Our system can be installed just by downloading the code and running the
 appropriate make commands.
 We do require the installation of the ANSITerminal package which can be done by
