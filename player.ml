@@ -49,6 +49,11 @@ let check_resource resource player =
   | Types.Brick -> player.brick
   | Types.Ore -> player.ore
 
+let rec add_resource_list list player =
+  match list with
+  | [] -> player
+  | h :: t -> add_resource_list t (add_resource h 1 player)
+
 let remove_resource resource amount player =
   if check_resource resource player < amount then
     failwith "Not Enough Resources"
@@ -59,6 +64,11 @@ let remove_resource resource amount player =
     | Types.Wheat -> { player with wheat = player.wheat - amount }
     | Types.Brick -> { player with brick = player.brick - amount }
     | Types.Ore -> { player with ore = player.ore - amount }
+
+let rec remove_resource_list list player =
+  match list with
+  | [] -> player
+  | h :: t -> remove_resource_list t (remove_resource h 1 player)
 
 let add_dev dev amount player =
   match dev with
