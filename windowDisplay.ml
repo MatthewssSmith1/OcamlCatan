@@ -187,6 +187,11 @@ let hex_index_of_mouse_pos pos =
 
 let pos_of_hex_index index = board_pos +.. coords_of_hex_index index
 
+let outline_rect ((x,y): Vec2.vec) ((w, h): Vec2.vec) =
+  fill_rect x y w h;
+  set_color black;
+  draw_rect x y w h;
+
 let outline_poly verts =
   fill_poly verts;
   set_color black;
@@ -382,6 +387,33 @@ let rec wait_next_click () =
   | None -> wait_next_click ()
   | Some c -> c
 
+let player_info_size = vec_of_floats 330 90
+let ui_bg_color = rgb 235 235 185
+
+let draw_player_info player pos =
+  let (x, y) = ints_of_vec pos in
+  let (w, h) = ints_of_vec player_info_size in
+  set_color ui_bg_color;
+  outline_rect pos player_info_size;
+  let padding = 10 in
+  let square_size = h - (2 * padding) in
+  player.color |> color_of_team_color |> set_color;
+  fill_rect (x + gap_size) (y + gap_size) square_size square_size;
+  let (x, y) = (x + h, y + h / 2) in
+  let pos = vec_of_floats x y in
+  let card_size = vec_of_int (h / 2 - padding) |> scale_x 0.5 in
+  rgb 108 154 230 |> set_color;
+  outline_rect pos card_width card_height;
+  draw_string_centered (pos +.. (scale 0.5 card_size)) "?";
+  draw_string_centered (pos +.. (card_size *.. (vec_of_floats 0.5 (-0.5)))) (Player.num_resources player |> string_of_int);
+  let x = x + card_width + gap_size in
+  let pos = vec_of_floats x y in
+  rgb 170 111 214 |> set_color;
+  outline_rect pos card_width card_height;
+  draw_string_centered (pos +.. (scale 0.5 card_size)) "D";
+  draw_string_centered (pos +.. (card_size *.. (vec_of_floats 0.5 (-0.5)))) (Player.num_devs player |> string_of_int);
+  ()
+
 let rec print_clicks () =
   let x, y =
     wait_next_click () |> hex_index_of_mouse_pos |> int_strings_of_vec
@@ -390,13 +422,12 @@ let rec print_clicks () =
   print_clicks ()
 
 let print_board (board : Board.t) =
-  (* for debuggin purposes, this adds peices to the board *)
-
   let x, y = int_strings_of_vec screen_size in
   Graphics.open_graph (" " ^ x ^ "x" ^ y ^ "+700-200");
   Graphics.set_window_title "OCaml Catan";
   Graphics.auto_synchronize false;
   clear (rgb 52 143 235);
+  (* for debuggin purposes, this adds peices to the board *)
   let board = add_peices board in
   fill_hexes board;
   fill_edges_and_verts board;

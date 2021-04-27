@@ -19,6 +19,8 @@ type color =
   | Blue
   | White
 
+let colors = [Red; Orange; Blue; White]
+
 type vertex =
   | Empty
   | Settlement of color

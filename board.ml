@@ -243,3 +243,29 @@ let int_to_hex_list board input =
           else helper board input (counter + 1)
   in
   helper board input 0
+
+
+
+
+  (* let verticies_of_player board team_color : (int * int) list =
+  let map_y x y = function
+    | None -> None
+    | Some vert -> match vert with
+      |Settlement of c when team_color = c -> Some (x * y) in
+      |City of c when team_color = c -> Some (x * y) in
+      |_ -> None
+  let map_x x arr -> List.mapi (map_y x) (Array.to_list arr) |> List.filter_map (fun a -> a) in
+  board.vertices |> Array.mapi map_x |> Array.to_list |> List.flatten
+
+let longest_road_from_vertex color ((x, y): (int * int)) =
+  let rec longest_from_edge edges color = () in
+  edge_to_adj_coords x y |> List.filter_map (fun (x, y) ->
+      match board.edges.(x).(y) with
+        | Some Road c when c = color ->
+        | _ -> None
+    )
+
+let longest_road_of_color board color : Types.color * int = 2
+
+let longest_road board : Types.color * int =
+  List.map longest_road_of_color Types.colors *)
