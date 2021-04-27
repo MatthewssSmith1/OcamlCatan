@@ -30,10 +30,20 @@ val int_to_hex_list : t -> int -> int list
 
 val vert_to_adj_verts : t -> int -> int -> Types.vertex list
 
+val vert_to_adj_vert_coords : t -> int -> int -> (int * int) list
+
 val vert_to_adj_edges : t -> int -> int -> Types.edge list
+
+val vert_to_adj_edge_coords : t -> int -> int -> (int * int) list
 
 val vert_to_adj_hexes : t -> int -> int -> Types.hex list
 
+val vert_to_adj_hex_coords : t -> int -> int -> (int * int) list
+
 val edge_to_adj_verts : t -> int -> int -> Types.vertex list
 
+val edge_to_adj_vert_coords : t -> int -> int -> (int * int) list
+
 val edge_to_adj_edges : t -> int -> int -> Types.edge list
+
+val edge_to_adj_edge_coords : t -> int -> int -> (int * int) list
