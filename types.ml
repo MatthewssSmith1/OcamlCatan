@@ -49,6 +49,7 @@ type turnCommand =
   | UpgradeCity of (int * int) (*hex index, dir*)
   | OfferTrade of (color * resource list * resource list)
   (*trading partner, resources offered, resources wanted*)
+  | BankTrade of (resource list * resource list)
   | BuyDevCard
   | UseDevCard of devCard
   | EndTurn

@@ -1,14 +1,12 @@
 type t
 
-exception Not_Enough_Resources
-
-exception Not_Enough_Devs
-
-exception Not_Enough_Pieces
-
 val add_resource : Types.resource -> int -> t -> t
 
 val remove_resource : Types.resource -> int -> t -> t
+
+val add_resource_list : Types.resource list -> t -> t
+
+val remove_resource_list : Types.resource list -> t -> t
 
 val check_resource : Types.resource -> t -> int
 
@@ -44,3 +42,7 @@ val can_add_city : t -> bool
 val can_add_dev : t -> bool
 
 val end_turn : t -> t
+
+val num_resources : t -> int
+
+val num_devs : t -> int

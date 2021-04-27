@@ -67,6 +67,104 @@ let vertex_from_hex (x, y) dir =
   | 5 -> (x, (2 * y) + offset)
   | _ -> failwith "dir not in [0,5]"
 
+let vert_to_adj_edge_coords board x y =
+  let offset = if x mod 2 = y mod 2 then 1 else -1 in
+  let unchecked_coords =
+    [ (x * 2, y - 1); (x * 2, y); ((x * 2) + offset, y) ]
+  in
+  List.filter
+    (fun (a, b) -> board.edges.(a).(b) <> None)
+    unchecked_coords
+
+let vert_to_adj_edges board hex dir =
+  let x, y = vertex_from_hex (hex_coords hex) dir in
+  let coords = vert_to_adj_edge_coords board x y in
+  List.map
+    (fun (a, b) ->
+      match board.edges.(a).(b) with
+      | Some i -> i
+      | _ -> failwith "should not occur")
+    coords
+
+let vert_to_adj_hex_coords board x y =
+  let xOffset = x mod 2 in
+  let yOffset = y mod 2 in
+  let secX = if xOffset + yOffset = 1 then x - 1 else x in
+  let secY = if yOffset = 1 then (y / 2) + 1 else (y / 2) - 2 in
+  let unchecked_coords = [ (x, y / 2); (secX, secY); (x - 1, y / 2) ] in
+  List.filter
+    (fun (a, b) ->
+      try board.hexes.(a).(b) <> None with Invalid_argument _ -> false)
+    unchecked_coords
+
+let vert_to_adj_hexes board hex dir =
+  let x, y = vertex_from_hex (hex_coords hex) dir in
+  let coords = vert_to_adj_hex_coords board x y in
+  List.map
+    (fun (a, b) ->
+      match board.hexes.(a).(b) with
+      | Some i -> i
+      | _ -> failwith "should not occur")
+    coords
+
+let edge_to_adj_vert_coords board x y =
+  let offset = if x mod 2 = 0 then 0 else 1 in
+  let unchecked_coords =
+    [ ((x - offset) / 2, y); ((x + offset) / 2, y + (1 - offset)) ]
+  in
+  List.filter
+    (fun (a, b) -> board.vertices.(a).(b) <> None)
+    unchecked_coords
+
+let edge_to_adj_verts board hex dir =
+  let x, y = edge_from_hex (hex_coords hex) dir in
+  let coords = edge_to_adj_vert_coords board x y in
+  List.map
+    (fun (a, b) ->
+      match board.vertices.(a).(b) with
+      | Some i -> i
+      | _ -> failwith "should not occur")
+    coords
+
+let edge_to_adj_edge_coords board x y =
+  let adj_vertices = edge_to_adj_vert_coords board x y in
+  let all_edges =
+    List.map
+      (fun (a, b) -> vert_to_adj_edge_coords board a b)
+      adj_vertices
+  in
+  List.flatten all_edges |> List.sort_uniq compare
+  |> List.filter (fun p -> p <> (x, y))
+
+let edge_to_adj_edges board hex dir =
+  let x, y = edge_from_hex (hex_coords hex) dir in
+  let coords = edge_to_adj_edge_coords board x y in
+  List.map
+    (fun (a, b) ->
+      match board.edges.(a).(b) with
+      | Some i -> i
+      | _ -> failwith "should not occur")
+    coords
+
+let vert_to_adj_vert_coords board x y =
+  let adj_edges = vert_to_adj_edge_coords board x y in
+  let all_vertices =
+    List.map (fun (a, b) -> edge_to_adj_vert_coords board a b) adj_edges
+  in
+  List.flatten all_vertices
+  |> List.sort_uniq compare
+  |> List.filter (fun p -> p <> (x, y))
+
+let vert_to_adj_verts board hex dir =
+  let x, y = vertex_from_hex (hex_coords hex) dir in
+  let coords = vert_to_adj_vert_coords board x y in
+  List.map
+    (fun (a, b) ->
+      match board.vertices.(a).(b) with
+      | Some i -> i
+      | _ -> failwith "should not occur")
+    coords
+
 let has_road player hex dir board =
   let coords = hex_coords hex in
   let a, b = edge_from_hex coords dir in
@@ -87,6 +185,15 @@ let has_settlement player hex dir board =
   | None -> false
   | Some Empty -> false
 
+let is_occupied player hex dir board =
+  let coords = hex_coords hex in
+  let a, b = vertex_from_hex coords dir in
+  match board.vertices.(a).(b) with
+  | Some (Settlement color) -> true
+  | Some (City color) -> true
+  | None -> false
+  | Some Empty -> false
+
 let can_add_road player hex dir board = failwith "Unimplemented"
 
 let can_add_settlement player hex dir board = failwith "Unimplemented"
@@ -95,35 +202,81 @@ let add_road player hex dir board =
   let coords = hex_coords hex in
   let a, b = edge_from_hex coords dir in
   match board.edges.(a).(b) with
-  | Some (Road _) -> failwith "road already exists"
-  | None -> failwith "out of bounds"
+  | Some (Road _) -> failwith "Road Already Exists"
+  | None -> failwith "Out Of Bounds"
   | Some Empty ->
-      board.edges.(a).(b) <- Some (Road (Player.get_color player));
-      board
+      let adj_edges = edge_to_adj_edges board dir hex in
+      let adj_verts = edge_to_adj_verts board dir hex in
+      if
+        List.fold_left
+          (fun x y -> x || has_road player hex dir board)
+          false adj_edges
+        || List.fold_left
+             (fun x y -> x || has_settlement player hex dir board)
+             false adj_verts
+      then (
+        board.edges.(a).(b) <- Some (Road (Player.get_color player));
+        board)
+      else (
+        print_string "Illegal Road";
+        board)
 
 let add_settlement player hex dir board =
   let coords = hex_coords hex in
   let a, b = vertex_from_hex coords dir in
   match board.vertices.(a).(b) with
-  | None -> failwith "out of bounds"
+  | None -> failwith "Out Of Bounds"
   | Some Empty ->
-      board.vertices.(a).(b) <-
-        Some (Settlement (Player.get_color player));
-      board
-  | _ -> failwith "already exists"
+      let adj_edges = vert_to_adj_edges board dir hex in
+      let adj_verts = vert_to_adj_verts board dir hex in
+      if
+        (fun x y -> x || has_road player hex dir board) false adj_edges
+        || not
+             (List.fold_left
+                (fun x y -> x || is_occupied player hex dir board)
+                false adj_verts)
+      then (
+        board.vertices.(a).(b) <-
+          Some (Settlement (Player.get_color player));
+        board)
+      else (
+        print_string "Illegal Settlement";
+        board)
+  | _ -> failwith "Already Exists"
+
+let add_settlement_start player hex dir board =
+  let coords = hex_coords hex in
+  let a, b = vertex_from_hex coords dir in
+  match board.vertices.(a).(b) with
+  | None -> failwith "Out Of Bounds"
+  | Some Empty ->
+      let adj_verts = vert_to_adj_verts board dir hex in
+      if
+        not
+          (List.fold_left
+             (fun x y -> x || is_occupied player hex dir board)
+             false adj_verts)
+      then (
+        board.vertices.(a).(b) <-
+          Some (Settlement (Player.get_color player));
+        board)
+      else (
+        print_string "Illegal Settlement";
+        board)
+  | _ -> failwith "Already Exists"
 
 let upgrade_city player hex dir board =
   let coords = hex_coords hex in
   let a, b = vertex_from_hex coords dir in
   match board.vertices.(a).(b) with
-  | None -> failwith "out of bounds"
-  | Some Empty -> failwith "can't build city on empty"
+  | None -> failwith "Out Of Bounds"
+  | Some Empty -> failwith "Can't Build City On Empty"
   | Some (Settlement c) ->
       if c <> Player.get_color player then
-        failwith "can't build city on wrong color"
+        failwith "Can't Build City on Wrong Color"
       else board.vertices.(a).(b) <- Some (Settlement c);
       board
-  | Some (City _) -> failwith "can't build city on city"
+  | Some (City _) -> failwith "Can't Build City On City"
 
 let move_robber hex state = { state with robber = hex }
 
@@ -188,6 +341,7 @@ let basic =
 let make_board () = make_board_from_array basic
 
 let make_random_board () =
+  Random.init (Int.of_float (Unix.time ()));
   let shuffle a =
     let n = Array.length a in
     let a = Array.copy a in

@@ -20,12 +20,6 @@ type t = {
   color : Types.color;
 }
 
-exception Not_Enough_Resources
-
-exception Not_Enough_Devs
-
-exception Not_Enough_Pieces
-
 let can_add_road player =
   player.roads >= 1 && player.brick >= 1 && player.wood >= 1
 
@@ -55,9 +49,14 @@ let check_resource resource player =
   | Types.Brick -> player.brick
   | Types.Ore -> player.ore
 
+let rec add_resource_list list player =
+  match list with
+  | [] -> player
+  | h :: t -> add_resource_list t (add_resource h 1 player)
+
 let remove_resource resource amount player =
   if check_resource resource player < amount then
-    raise Not_Enough_Resources
+    failwith "Not Enough Resources"
   else
     match resource with
     | Types.Wood -> { player with wood = player.wood - amount }
@@ -65,6 +64,11 @@ let remove_resource resource amount player =
     | Types.Wheat -> { player with wheat = player.wheat - amount }
     | Types.Brick -> { player with brick = player.brick - amount }
     | Types.Ore -> { player with ore = player.ore - amount }
+
+let rec remove_resource_list list player =
+  match list with
+  | [] -> player
+  | h :: t -> remove_resource_list t (remove_resource h 1 player)
 
 let add_dev dev amount player =
   match dev with
@@ -87,7 +91,8 @@ let check_dev dev player =
   | Types.VictoryPoint -> player.victoryPoint
 
 let remove_dev dev amount player =
-  if check_dev dev player < amount then raise Not_Enough_Devs
+  if check_dev dev player < amount then
+    failwith "Not Enough Develpment Cards"
   else
     match dev with
     | Types.Knight -> { player with knight = player.knight - amount }
@@ -103,38 +108,42 @@ let remove_dev dev amount player =
 let add_port port player = { player with ports = port :: player.ports }
 
 let place_road player =
-  if not (player.roads >= 1) then raise Not_Enough_Pieces
-  else if not (player.brick >= 1 && player.wood >= 1) then
-    raise Not_Enough_Resources
-  else
-    {
-      player with
-      roads = player.roads - 1;
-      brick = player.brick - 1;
-      wood = player.wood - 1;
-    }
+  if player.roads <= 13 then
+    if not (player.roads >= 1) then failwith "Not Enough Pieces"
+    else if not (player.brick >= 1 && player.wood >= 1) then
+      failwith "Not Enough Resources"
+    else
+      {
+        player with
+        roads = player.roads - 1;
+        brick = player.brick - 1;
+        wood = player.wood - 1;
+      }
+  else player
 
 let place_settlement player =
-  if not (player.settlements >= 1) then raise Not_Enough_Pieces
-  else if
-    not
-      (player.brick >= 1 && player.wood >= 1 && player.sheep >= 1
-     && player.wheat >= 1)
-  then raise Not_Enough_Resources
-  else
-    {
-      player with
-      settlements = player.settlements - 1;
-      brick = player.brick - 1;
-      wood = player.wood - 1;
-      sheep = player.sheep - 1;
-      wheat = player.wheat - 1;
-    }
+  if player.settlements <= 3 then
+    if not (player.settlements >= 1) then failwith "Not Enough Pieces"
+    else if
+      not
+        (player.brick >= 1 && player.wood >= 1 && player.sheep >= 1
+       && player.wheat >= 1)
+    then failwith "Not Enough Resources"
+    else
+      {
+        player with
+        settlements = player.settlements - 1;
+        brick = player.brick - 1;
+        wood = player.wood - 1;
+        sheep = player.sheep - 1;
+        wheat = player.wheat - 1;
+      }
+  else player
 
 let place_city player =
-  if not (player.cities >= 1) then raise Not_Enough_Pieces
+  if not (player.cities >= 1) then failwith "Not Enough Pieces"
   else if not (player.ore >= 3 && player.wheat >= 2) then
-    raise Not_Enough_Resources
+    failwith "Not Enough Resources"
   else
     {
       player with
@@ -146,8 +155,15 @@ let place_city player =
 
 let buy_dev player dev =
   if not (player.sheep >= 1 && player.ore >= 1 && player.wheat >= 1)
-  then raise Not_Enough_Resources
-  else add_dev dev 1 player
+  then failwith "Not Enough Resources"
+  else
+    add_dev dev 1
+      {
+        player with
+        sheep = player.sheep - 1;
+        ore = player.ore - 1;
+        wheat = player.wheat - 1;
+      }
 
 let get_color player = player.color
 
@@ -217,13 +233,22 @@ let to_string t =
   ^ "Victory Points: "
   ^ string_of_int t.victoryPoint
   ^ "\n" (*Unplayable Dev Cards*) ^ "New Knights: "
-  ^ string_of_int t.knight ^ "New Road Buildings: "
-  ^ string_of_int t.roadBuilding
+  ^ string_of_int t.newKnight
+  ^ "New Road Buildings: "
+  ^ string_of_int t.newRoadBuilding
   ^ "New Year of Plenties: "
-  ^ string_of_int t.yearOfPlenty
+  ^ string_of_int t.newYearOfPlenty
   ^ "New Monopolies: "
-  ^ string_of_int t.monopoly
+  ^ string_of_int t.newMonopoly
   ^ "\n" (*Remaining*) ^ "Remaining Roads: "
   ^ string_of_int t.roads ^ "Remaining Settlements: "
   ^ string_of_int t.settlements
   ^ "Remaining Cities: " ^ string_of_int t.cities
+
+let num_resources player =
+  player.wood + player.sheep + player.wheat + player.brick + player.ore
+
+let num_devs player =
+  player.knight + player.roadBuilding + player.yearOfPlenty
+  + player.monopoly + player.victoryPoint + player.newKnight
+  + player.newRoadBuilding + player.newYearOfPlenty + player.newMonopoly

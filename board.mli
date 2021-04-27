@@ -4,6 +4,8 @@ val add_road : Player.t -> int -> int -> t -> t
 
 val add_settlement : Player.t -> int -> int -> t -> t
 
+val add_settlement_state : Player.t -> int -> int -> t -> t
+
 val upgrade_city : Player.t -> int -> int -> t -> t
 
 (*Check for adj roads/settlements/cities*)
@@ -29,6 +31,25 @@ val hex_coords : int -> int * int
 
 val int_to_hex_list : t -> int -> int list
 
-(* val verticies_of_player : t -> Types.color -> (int * int) list
+val vert_to_adj_verts : t -> int -> int -> Types.vertex list
 
+val vert_to_adj_vert_coords : t -> int -> int -> (int * int) list
+
+val vert_to_adj_edges : t -> int -> int -> Types.edge list
+
+val vert_to_adj_edge_coords : t -> int -> int -> (int * int) list
+
+val vert_to_adj_hexes : t -> int -> int -> Types.hex list
+
+val vert_to_adj_hex_coords : t -> int -> int -> (int * int) list
+
+val edge_to_adj_verts : t -> int -> int -> Types.vertex list
+
+val edge_to_adj_vert_coords : t -> int -> int -> (int * int) list
+
+val edge_to_adj_edges : t -> int -> int -> Types.edge list
+
+val edge_to_adj_edge_coords : t -> int -> int -> (int * int) list
+
+(* val verticies_of_player : t -> Types.color -> (int * int) list
 val longest_road : t -> Types.color * int *)
