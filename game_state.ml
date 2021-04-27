@@ -7,7 +7,7 @@ type t = {
 let next_turn game =
   match game.players with
   | [] -> game
-  | h :: t -> { game with players = t @ [ h ] }
+  | h :: t -> { game with players = t @ [ Player.end_turn h ] }
 
 let current_turn game =
   match game.players with
