@@ -65,6 +65,8 @@ let parseCommand input =
   | [ "upgrade"; a; b ] ->
       Types.UpgradeCity (parse_hex_dir_tuple [ a; b ])
   | [ "trade"; a; b; c ] -> Types.OfferTrade (parse_trade [ a; b; c ])
+  | [ "bank"; a; b ] ->
+      Types.BankTrade (parse_resource_list a, parse_resource_list b)
   | [ "buydev" ] -> Types.BuyDevCard
   | [ "usedev"; a ] -> Types.UseDevCard (parse_dev_card [ a ])
   | [ "end" ] -> Types.EndTurn

@@ -284,8 +284,6 @@ let vert_to_adj_hexes board hex dir =
       | _ -> failwith "should not occur")
     coords
 
-(* val edge_to_adj_verts : t -> int -> int -> Types.vertex list *)
-
 let edge_to_adj_vert_coords board x y =
   let offset = if x mod 2 = 0 then 0 else 1 in
   let unchecked_coords =
@@ -305,7 +303,6 @@ let edge_to_adj_verts board hex dir =
       | _ -> failwith "should not occur")
     coords
 
-(* val edge_to_adj_edges : t -> int -> int -> Types.edge list *)
 let edge_to_adj_edge_coords board x y =
   let adj_vertices = edge_to_adj_vert_coords board x y in
   let all_edges =
@@ -326,7 +323,6 @@ let edge_to_adj_edges board hex dir =
       | _ -> failwith "should not occur")
     coords
 
-(* val vert_to_adj_verts : t -> int -> int -> Types.vertex list *)
 let vert_to_adj_vert_coords board x y =
   let adj_edges = vert_to_adj_edge_coords board x y in
   let all_vertices =
