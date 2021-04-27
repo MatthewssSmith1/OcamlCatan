@@ -40,9 +40,9 @@ let string_to_dev_card str =
   Types.(
     match str with
     | "knight" -> Knight
-    | "roadbuilding" -> RoadBuildity
-    | "monopoly" -> Monopolyng
-    | "yearofplenty" -> YearOfPlen
+    | "roadbuilding" -> RoadBuilding
+    | "monopoly" -> Monopoly
+    | "yearofplenty" -> YearOfPlenty
     | "victorypoint" -> VictoryPoint
     | _ -> failwith "bad dev card")
 
