@@ -233,13 +233,22 @@ let to_string t =
   ^ "Victory Points: "
   ^ string_of_int t.victoryPoint
   ^ "\n" (*Unplayable Dev Cards*) ^ "New Knights: "
-  ^ string_of_int t.knight ^ "New Road Buildings: "
-  ^ string_of_int t.roadBuilding
+  ^ string_of_int t.newKnight
+  ^ "New Road Buildings: "
+  ^ string_of_int t.newRoadBuilding
   ^ "New Year of Plenties: "
-  ^ string_of_int t.yearOfPlenty
+  ^ string_of_int t.newYearOfPlenty
   ^ "New Monopolies: "
-  ^ string_of_int t.monopoly
+  ^ string_of_int t.newMonopoly
   ^ "\n" (*Remaining*) ^ "Remaining Roads: "
   ^ string_of_int t.roads ^ "Remaining Settlements: "
   ^ string_of_int t.settlements
   ^ "Remaining Cities: " ^ string_of_int t.cities
+
+let num_resources player =
+  player.wood + player.sheep + player.wheat + player.brick + player.ore
+
+let num_devs player =
+  player.knight + player.roadBuilding + player.yearOfPlenty
+  + player.monopoly + player.victoryPoint + player.newKnight
+  + player.newRoadBuilding + player.newYearOfPlenty + player.newMonopoly

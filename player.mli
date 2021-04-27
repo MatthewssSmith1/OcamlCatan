@@ -42,3 +42,7 @@ val can_add_city : t -> bool
 val can_add_dev : t -> bool
 
 val end_turn : t -> t
+
+val num_resources : t -> int
+
+val num_devs : t -> int
