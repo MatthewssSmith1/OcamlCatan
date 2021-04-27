@@ -3,6 +3,8 @@ type t = {
   players : Player.t list;
   trades : Types.trade_offer list;
   devs : Types.devCard list;
+  longest_road : (Player.t * int) option;
+  largest_army : (Player.t * int) option;
 }
 
 let next_turn game =
@@ -41,6 +43,8 @@ let make_new_game =
     players = [];
     trades = [];
     devs = dev_list ();
+    longest_road = None;
+    largest_army = None;
   }
 
 let game_to_players game = game.players
