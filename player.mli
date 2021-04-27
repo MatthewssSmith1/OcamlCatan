@@ -4,6 +4,10 @@ val add_resource : Types.resource -> int -> t -> t
 
 val remove_resource : Types.resource -> int -> t -> t
 
+val add_resource_list : Types.resource list -> t -> t
+
+val remove_resource_list : Types.resource list -> t -> t
+
 val check_resource : Types.resource -> t -> int
 
 val add_dev : Types.devCard -> int -> t -> t

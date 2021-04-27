@@ -152,3 +152,32 @@ let buy_dev_card state hex dir =
 
 let open_trade state offer =
   { state with trades = offer :: state.trades }
+
+let close_trade state offer =
+  let new_trades = List.filter (fun x -> x != offer) state.trades in
+  { state with trades = new_trades }
+
+let accept_trade state offer color =
+  if List.fold_left (fun x y -> x || y = offer) false state.trades then (
+    let p1 = current_turn state in
+    let p2 = get_player state color in
+    try
+      let new_p1 =
+        p1
+        |> Player.add_resource_list offer.request
+        |> Player.remove_resource_list offer.offer
+      in
+      let new_p2 =
+        p2
+        |> Player.add_resource_list offer.offer
+        |> Player.remove_resource_list offer.request
+      in
+      replace_player
+        (replace_player state (Player.get_color p1) new_p1)
+        color new_p2
+    with Failure x ->
+      print_string x;
+      state)
+  else (
+    print_string "Trade Offer Not Found";
+    state)
