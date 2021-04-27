@@ -192,6 +192,8 @@ let outline_poly verts =
   set_color black;
   draw_poly verts
 
+let fill_robber hex_pos = ()
+
 let fill_token pos hex =
   match Types.number_of_hex hex with
   | 7 -> ()
@@ -329,6 +331,9 @@ let clear color =
   Graphics.fill_rect 0 0 w h
 
 let add_peices (board : Board.t) =
+  fill_port (pos_of_hex_index 0) 4 Types.ThreeToOne;
+  fill_port (pos_of_hex_index 1) 5 (Types.TwoToOne Wood);
+  fill_port (pos_of_hex_index 2) 0 (Types.TwoToOne Ore);
   let rd = Player.make_player Types.Red in
   let bl = Player.make_player Types.Blue in
   board
@@ -370,29 +375,22 @@ let rec print_clicks () =
 
 let print_board (board : Board.t) =
   (* for debuggin purposes, this adds peices to the board *)
-  let board = add_peices board in
 
   let x, y = int_strings_of_vec screen_size in
   Graphics.open_graph (" " ^ x ^ "x" ^ y ^ "+700-200");
   Graphics.set_window_title "OCaml Catan";
   Graphics.auto_synchronize false;
   clear (rgb 52 143 235);
+  let board = add_peices board in
   fill_hexes board;
   fill_edges_and_verts board;
-  (* let res = 2 in
-  for x = 0 to x_int_of screen_size / res do
-    for y = 0 to y_int_of screen_size / res do
-      let pixel_pos = vec_of_ints (res * x) (res * y) in let
-         unrounded = pixel_pos |> hex_index_of_mouse_pos in let rounded
-         = map Float.round unrounded in let dist = abs_float (distance
-         unrounded rounded) in set_color (rgb 100 100 (255. *. dist |>
-         int_of_float)); fill_rect (x_int_of pixel_pos) (y_int_of
-         pixel_pos) res res
-    done
-  done; *)
-  fill_port (pos_of_hex_index 0) 4 Types.ThreeToOne;
-  fill_port (pos_of_hex_index 1) 5 (Types.TwoToOne Wood);
-  fill_port (pos_of_hex_index 2) 0 (Types.TwoToOne Ore);
+  (* let res = 2 in for x = 0 to x_int_of screen_size / res do for y = 0
+     to y_int_of screen_size / res do let pixel_pos = vec_of_ints (res *
+     x) (res * y) in let unrounded = pixel_pos |> hex_index_of_mouse_pos
+     in let rounded = map Float.round unrounded in let dist = abs_float
+     (distance unrounded rounded) in set_color (rgb 100 100 (255. *.
+     dist |> int_of_float)); fill_rect (x_int_of pixel_pos) (y_int_of
+     pixel_pos) res res done done; *)
   render ();
   (* Graphics.loop_at_exit [] ignore *)
   print_clicks () |> ignore
