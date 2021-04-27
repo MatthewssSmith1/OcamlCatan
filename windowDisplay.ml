@@ -438,7 +438,7 @@ let print_board (board : Board.t) =
      (distance unrounded rounded) in set_color (rgb 100 100 (255. *.
      dist |> int_of_float)); fill_rect (x_int_of pixel_pos) (y_int_of
      pixel_pos) res res done done; *)
-  (* fill_robber (pos_of_hex_index 7); *)
+  fill_robber (pos_of_hex_index board.robber);
   render ();
   (* Graphics.loop_at_exit [] ignore *)
   print_clicks () |> ignore
