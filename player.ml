@@ -20,12 +20,6 @@ type t = {
   color : Types.color;
 }
 
-exception Not_Enough_Resources
-
-exception Not_Enough_Devs
-
-exception Not_Enough_Pieces
-
 let can_add_road player =
   player.roads >= 1 && player.brick >= 1 && player.wood >= 1
 
@@ -57,7 +51,7 @@ let check_resource resource player =
 
 let remove_resource resource amount player =
   if check_resource resource player < amount then
-    raise Not_Enough_Resources
+    failwith "Not Enough Resources"
   else
     match resource with
     | Types.Wood -> { player with wood = player.wood - amount }
@@ -87,7 +81,8 @@ let check_dev dev player =
   | Types.VictoryPoint -> player.victoryPoint
 
 let remove_dev dev amount player =
-  if check_dev dev player < amount then raise Not_Enough_Devs
+  if check_dev dev player < amount then
+    failwith "Not Enough Develpment Cards"
   else
     match dev with
     | Types.Knight -> { player with knight = player.knight - amount }
@@ -103,9 +98,9 @@ let remove_dev dev amount player =
 let add_port port player = { player with ports = port :: player.ports }
 
 let place_road player =
-  if not (player.roads >= 1) then raise Not_Enough_Pieces
+  if not (player.roads >= 1) then failwith "Not Enough Pieces"
   else if not (player.brick >= 1 && player.wood >= 1) then
-    raise Not_Enough_Resources
+    failwith "Not Enough Resources"
   else
     {
       player with
@@ -115,12 +110,12 @@ let place_road player =
     }
 
 let place_settlement player =
-  if not (player.settlements >= 1) then raise Not_Enough_Pieces
+  if not (player.settlements >= 1) then failwith "Not Enough Pieces"
   else if
     not
       (player.brick >= 1 && player.wood >= 1 && player.sheep >= 1
      && player.wheat >= 1)
-  then raise Not_Enough_Resources
+  then failwith "Not Enough Resources"
   else
     {
       player with
@@ -132,9 +127,9 @@ let place_settlement player =
     }
 
 let place_city player =
-  if not (player.cities >= 1) then raise Not_Enough_Pieces
+  if not (player.cities >= 1) then failwith "Not Enough Pieces"
   else if not (player.ore >= 3 && player.wheat >= 2) then
-    raise Not_Enough_Resources
+    failwith "Not Enough Resources"
   else
     {
       player with
@@ -146,8 +141,15 @@ let place_city player =
 
 let buy_dev player dev =
   if not (player.sheep >= 1 && player.ore >= 1 && player.wheat >= 1)
-  then raise Not_Enough_Resources
-  else add_dev dev 1 player
+  then failwith "Not Enough Resources"
+  else
+    add_dev dev 1
+      {
+        player with
+        sheep = player.sheep - 1;
+        ore = player.ore - 1;
+        wheat = player.wheat - 1;
+      }
 
 let get_color player = player.color
 
