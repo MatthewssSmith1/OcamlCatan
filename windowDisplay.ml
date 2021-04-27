@@ -3,6 +3,8 @@ open Graphics
 module Vec2 = struct
   type vec = float * float
 
+  let pi = 3.141592653
+
   let vec_of_floats x y : vec = (x, y)
 
   let vec_of_float a : vec = (a, a)
@@ -12,6 +14,10 @@ module Vec2 = struct
   let vec_of_int a : vec = (float_of_int a, float_of_int a)
 
   let vec_of_int_tpl (x, y) : vec = (float_of_int x, float_of_int y)
+
+  let print_vec ((x, y) : vec) =
+    print_string
+      ("<" ^ string_of_float x ^ ", " ^ string_of_float y ^ ">\n")
 
   let x_of ((x, y) : vec) = x
 
@@ -58,6 +64,12 @@ module Vec2 = struct
     let new_y = (x *. sin_a) +. (y *. cos_a) in
     (new_x, new_y)
 
+  (** [rotate_degrees a v] is v rotated counterclockwise around the
+      origin by [a] degrees *)
+  let rotate_degrees angle = rotate (angle /. 180. *. pi)
+
+  let rotate_dir dir = rotate ((dir - 1 |> float_of_int) *. pi /. -3.)
+
   let distance ((x1, y1) : vec) ((x2, y2) : vec) =
     let xd = x1 -. x2 in
     let yd = y1 -. y2 in
@@ -96,15 +108,20 @@ let board_pos =
   let offset = vec_of_floats (sqrt_3 *. hex_size) (2. *. hex_size) in
   screen_size +.. offset -.. board_size |> scale 0.5
 
+let color_of_resource = function
+  | Types.Wood -> rgb 81 125 25
+  | Types.Sheep -> rgb 142 217 104
+  | Types.Wheat -> rgb 240 173 0
+  | Types.Brick -> rgb 156 67 0
+  | Types.Ore -> rgb 123 111 131
+
 let color_of_hex = function
   | Types.Desert -> rgb 212 212 133
-  | Other (_, res) -> (
-      match res with
-      | Types.Wood -> rgb 81 125 25
-      | Types.Sheep -> rgb 142 217 104
-      | Types.Wheat -> rgb 240 173 0
-      | Types.Brick -> rgb 156 67 0
-      | Types.Ore -> rgb 123 111 131)
+  | Other (_, r) -> color_of_resource r
+
+let color_of_port = function
+  | Types.ThreeToOne -> white
+  | Types.TwoToOne r -> color_of_resource r
 
 let draw_string_centered pos text =
   let x, y =
@@ -168,13 +185,14 @@ let hex_index_of_mouse_pos pos =
   let r = 2. /. 3. *. y /. hex_size in
   vec_of_floats q r
 
-let fill_hex pos hex =
-  hex |> color_of_hex |> set_color;
-  let map_coord (v : vec) = scale hex_size v +.. pos |> ints_of_vec in
-  let vertex_coords = unit_hexagon_coords |> Array.map map_coord in
-  vertex_coords |> fill_poly;
+let pos_of_hex_index index = board_pos +.. coords_of_hex_index index
+
+let outline_poly verts =
+  fill_poly verts;
   set_color black;
-  vertex_coords |> draw_poly;
+  draw_poly verts
+
+let fill_token pos hex =
   match Types.number_of_hex hex with
   | 7 -> ()
   | n ->
@@ -185,9 +203,16 @@ let fill_hex pos hex =
       set_font_size (hex_size *. 0.4);
       n |> string_of_int |> draw_string_centered pos
 
+let fill_hex pos hex =
+  hex |> color_of_hex |> set_color;
+  let map_coord (v : vec) = scale hex_size v +.. pos |> ints_of_vec in
+  let verts = unit_hexagon_coords |> Array.map map_coord in
+  outline_poly verts;
+  fill_token pos hex
+
 let fill_hexes (board : Board.t) =
   for i = 0 to 18 do
-    let pos = board_pos +.. coords_of_hex_index i in
+    let pos = pos_of_hex_index i in
     let hex = Board.hex_info board i in
     fill_hex pos hex
   done
@@ -211,9 +236,7 @@ let fill_tri pos flipped =
     |> ( +.. ) pos |> ints_of_vec
   in
   let verts = Array.map map_coord unit_triangle_coords in
-  fill_poly verts;
-  set_color black;
-  draw_poly verts
+  outline_poly verts
 
 let fill_vertex hex_pos dir (vertex : Types.vertex) =
   let pos = scale hex_size unit_hexagon_coords.(dir) +.. hex_pos in
@@ -241,16 +264,15 @@ let unit_road_coords : Vec2.vec array =
     scale_x (-1.) road_size;
   |]
 
+let edge_center_coord dir =
+  unit_hexagon_coords.(dir) +.. unit_hexagon_coords.((dir + 1) mod 6)
+  |> scale 0.5
+
 let road_verts hex_pos dir =
-  let edge_pos =
-    unit_hexagon_coords.(dir) +.. unit_hexagon_coords.((dir + 1) mod 6)
-    |> scale (0.5 *. hex_size)
-    |> ( +.. ) hex_pos
-  in
   let map_coord v =
-    v
-    |> rotate ((dir - 1 |> float_of_int) *. 3.141592 /. -3.)
-    |> scale hex_size |> ( +.. ) edge_pos |> ints_of_vec
+    v |> rotate_dir dir
+    |> ( +.. ) (edge_center_coord dir)
+    |> scale hex_size |> ( +.. ) hex_pos |> ints_of_vec
   in
   Array.map map_coord unit_road_coords
 
@@ -259,13 +281,38 @@ let fill_edge hex_pos dir = function
   | Types.Road c ->
       c |> color_of_team_color |> set_color;
       let verts = road_verts hex_pos dir in
-      fill_poly verts;
-      set_color black;
-      draw_poly verts
+      outline_poly verts
+
+let port_gap = 0.15
+
+let port_width = 0.6
+
+let port_height = port_width *. sqrt_3 /. 2.
+
+let fill_port hex_pos dir (port : Types.port) =
+  port |> color_of_port |> set_color;
+  let j = Vec2.vec_of_floats 0. 1. |> Vec2.rotate_degrees (-30.) in
+  let i = j |> Vec2.rotate_degrees (-90.) in
+  let map_coord vert =
+    vert
+    |> ( +.. ) (scale port_gap j)
+    |> ( +.. ) (edge_center_coord 0)
+    |> rotate_degrees ((dir |> float_of_int) *. -60.)
+    |> scale hex_size |> ( +.. ) hex_pos |> ints_of_vec
+  in
+  let verts =
+    Array.map map_coord
+      [|
+        scale (port_width /. 2.) i;
+        scale (port_width /. -2.) i;
+        scale port_height j;
+      |]
+  in
+  outline_poly verts
 
 let fill_edges_and_verts (board : Board.t) =
   for i = 0 to 18 do
-    let pos = board_pos +.. coords_of_hex_index i in
+    let pos = pos_of_hex_index i in
     let verts = Board.hex_to_vertices board i in
     let edges = Board.hex_to_edges board i in
     List.iter
@@ -332,18 +379,20 @@ let print_board (board : Board.t) =
   clear (rgb 52 143 235);
   fill_hexes board;
   fill_edges_and_verts board;
-  let res = 2 in
-  (* for x = 0 to x_int_of screen_size / res do
+  (* let res = 2 in
+  for x = 0 to x_int_of screen_size / res do
     for y = 0 to y_int_of screen_size / res do
-      if (x + y) mod 2 = 0 then (
-        let pixel_pos = vec_of_ints (res * x) (res * y) in
-        let unrounded = pixel_pos |> hex_index_of_mouse_pos in
-        let rounded = map Float.round unrounded in
-        let dist = abs_float (distance unrounded rounded) in
-        set_color (rgb 100 100 (255. *. dist |> int_of_float))
-        (* fill_rect (x_int_of pixel_pos) (y_int_of pixel_pos) res res) *)
+      let pixel_pos = vec_of_ints (res * x) (res * y) in let
+         unrounded = pixel_pos |> hex_index_of_mouse_pos in let rounded
+         = map Float.round unrounded in let dist = abs_float (distance
+         unrounded rounded) in set_color (rgb 100 100 (255. *. dist |>
+         int_of_float)); fill_rect (x_int_of pixel_pos) (y_int_of
+         pixel_pos) res res
     done
   done; *)
+  fill_port (pos_of_hex_index 0) 4 Types.ThreeToOne;
+  fill_port (pos_of_hex_index 1) 5 (Types.TwoToOne Wood);
+  fill_port (pos_of_hex_index 2) 0 (Types.TwoToOne Ore);
   render ();
   (* Graphics.loop_at_exit [] ignore *)
   print_clicks () |> ignore
