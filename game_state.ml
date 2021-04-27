@@ -136,7 +136,7 @@ let upgrade_city state hex dir =
     print_string x;
     state
 
-let buy_dev_card state hex dir =
+let buy_dev_card state =
   match state.devs with
   | [] ->
       print_string "No More Development Cards";
