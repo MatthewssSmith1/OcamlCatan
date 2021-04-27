@@ -243,3 +243,105 @@ let int_to_hex_list board input =
           else helper board input (counter + 1)
   in
   helper board input 0
+
+let vert_to_adj_edge_coords board x y =
+  let offset = if x mod 2 = y mod 2 then 1 else -1 in
+  let unchecked_coords =
+    [ (x * 2, y - 1); (x * 2, y); ((x * 2) + offset, y) ]
+  in
+  List.filter
+    (fun (a, b) -> board.edges.(a).(b) <> None)
+    unchecked_coords
+
+let vert_to_adj_edges board hex dir =
+  let x, y = vertex_from_hex (hex_coords hex) dir in
+  let coords = vert_to_adj_edge_coords board x y in
+  List.map
+    (fun (a, b) ->
+      match board.edges.(a).(b) with
+      | Some i -> i
+      | _ -> failwith "should not occur")
+    coords
+
+let vert_to_adj_hex_coords board x y =
+  let xOffset = x mod 2 in
+  let yOffset = y mod 2 in
+  let secX = if xOffset + yOffset = 1 then x - 1 else x in
+  let secY = if yOffset = 1 then (y / 2) + 1 else (y / 2) - 2 in
+  let unchecked_coords = [ (x, y / 2); (secX, secY); (x - 1, y / 2) ] in
+  List.filter
+    (fun (a, b) ->
+      try board.hexes.(a).(b) <> None with Invalid_argument _ -> false)
+    unchecked_coords
+
+let vert_to_adj_hexes board hex dir =
+  let x, y = vertex_from_hex (hex_coords hex) dir in
+  let coords = vert_to_adj_hex_coords board x y in
+  List.map
+    (fun (a, b) ->
+      match board.hexes.(a).(b) with
+      | Some i -> i
+      | _ -> failwith "should not occur")
+    coords
+
+(* val edge_to_adj_verts : t -> int -> int -> Types.vertex list *)
+
+let edge_to_adj_vert_coords board x y =
+  let offset = if x mod 2 = 0 then 0 else 1 in
+  let unchecked_coords =
+    [ ((x - offset) / 2, y); ((x + offset) / 2, y + (1 - offset)) ]
+  in
+  List.filter
+    (fun (a, b) -> board.vertices.(a).(b) <> None)
+    unchecked_coords
+
+let edge_to_adj_verts board hex dir =
+  let x, y = edge_from_hex (hex_coords hex) dir in
+  let coords = edge_to_adj_vert_coords board x y in
+  List.map
+    (fun (a, b) ->
+      match board.vertices.(a).(b) with
+      | Some i -> i
+      | _ -> failwith "should not occur")
+    coords
+
+(* val edge_to_adj_edges : t -> int -> int -> Types.edge list *)
+let edge_to_adj_edge_coords board x y =
+  let adj_vertices = edge_to_adj_vert_coords board x y in
+  let all_edges =
+    List.map
+      (fun (a, b) -> vert_to_adj_edge_coords board a b)
+      adj_vertices
+  in
+  List.flatten all_edges |> List.sort_uniq compare
+  |> List.filter (fun p -> p <> (x, y))
+
+let edge_to_adj_edges board hex dir =
+  let x, y = edge_from_hex (hex_coords hex) dir in
+  let coords = edge_to_adj_edge_coords board x y in
+  List.map
+    (fun (a, b) ->
+      match board.edges.(a).(b) with
+      | Some i -> i
+      | _ -> failwith "should not occur")
+    coords
+
+(* val vert_to_adj_verts : t -> int -> int -> Types.vertex list *)
+let vert_to_adj_vert_coords board x y =
+  let adj_edges = vert_to_adj_edge_coords board x y in
+  let all_vertices =
+    List.map (fun (a, b) -> edge_to_adj_vert_coords board a b) adj_edges
+  in
+  List.flatten all_vertices
+  |> List.sort_uniq compare
+  |> List.filter (fun p -> p <> (x, y))
+
+let vert_to_adj_verts board hex dir =
+  let x, y = vertex_from_hex (hex_coords hex) dir in
+  let coords = vert_to_adj_vert_coords board x y in
+  List.map
+    (fun (a, b) ->
+      match board.vertices.(a).(b) with
+      | Some i -> i
+      | _ -> failwith "should not occur")
+    coords
