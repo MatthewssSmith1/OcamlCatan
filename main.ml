@@ -65,6 +65,7 @@ let parseCommand input =
         | "trade" -> OfferTrade (parse_trade t)
         | "buydev" -> BuyDevCard
         | "usedev" -> UseDevCard (parse_dev_card t)
+        | "end" -> EndTurn
         | _ -> failwith "unknown command"))
   | [] -> failwith "empty command"
 
