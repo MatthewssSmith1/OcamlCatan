@@ -244,6 +244,27 @@ let add_settlement player hex dir board =
         board)
   | _ -> failwith "Already Exists"
 
+let add_settlement_start player hex dir board =
+  let coords = hex_coords hex in
+  let a, b = vertex_from_hex coords dir in
+  match board.vertices.(a).(b) with
+  | None -> failwith "Out Of Bounds"
+  | Some Empty ->
+      let adj_verts = vert_to_adj_verts board dir hex in
+      if
+        not
+          (List.fold_left
+             (fun x y -> x || is_occupied player hex dir board)
+             false adj_verts)
+      then (
+        board.vertices.(a).(b) <-
+          Some (Settlement (Player.get_color player));
+        board)
+      else (
+        print_string "Illegal Settlement";
+        board)
+  | _ -> failwith "Already Exists"
+
 let upgrade_city player hex dir board =
   let coords = hex_coords hex in
   let a, b = vertex_from_hex coords dir in
