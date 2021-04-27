@@ -27,3 +27,13 @@ val hex_to_edges : t -> int -> Types.edge list
 val hex_coords : int -> int * int
 
 val int_to_hex_list : t -> int -> int list
+
+val vert_to_adj_verts : t -> int -> int -> Types.vertex list
+
+val vert_to_adj_edges : t -> int -> int -> Types.edge list
+
+val vert_to_adj_hexes : t -> int -> int -> Types.hex list
+
+val edge_to_adj_verts : t -> int -> int -> Types.vertex list
+
+val edge_to_adj_edges : t -> int -> int -> Types.edge list
