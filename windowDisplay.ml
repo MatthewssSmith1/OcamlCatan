@@ -192,7 +192,23 @@ let outline_poly verts =
   set_color black;
   draw_poly verts
 
-let fill_robber hex_pos = ()
+let outline_ellipse (pos: Vec2.vec) (rad: Vec2.vec) =
+  let (x, y) = ints_of_vec pos in
+  let (rx, ry) = ints_of_vec rad in
+  fill_ellipse x y rx ry;
+  set_color black;
+  draw_ellipse x y rx ry
+
+let fill_robber pos =
+  let pos = pos +.. (vec_of_floats (-0.4) (-0.3) |> scale hex_size) in
+  rgb 156 156 156 |> set_color;
+  outline_ellipse pos (vec_of_floats 0.25 0.12 |> scale hex_size);
+  rgb 156 156 156 |> set_color;
+  let pos = pos +.. (vec_of_floats (0.) (0.25) |> scale hex_size) in
+  outline_ellipse pos (vec_of_floats 0.23 0.3 |> scale hex_size);
+  rgb 156 156 156 |> set_color;
+  let pos = pos +.. (vec_of_floats (0.) (0.3) |> scale hex_size) in
+  outline_ellipse pos (vec_of_floats 0.21 0.21 |> scale hex_size)
 
 let fill_token pos hex =
   match Types.number_of_hex hex with
@@ -391,6 +407,7 @@ let print_board (board : Board.t) =
      (distance unrounded rounded) in set_color (rgb 100 100 (255. *.
      dist |> int_of_float)); fill_rect (x_int_of pixel_pos) (y_int_of
      pixel_pos) res res done done; *)
+  (* fill_robber (pos_of_hex_index 7); *)
   render ();
   (* Graphics.loop_at_exit [] ignore *)
   print_clicks () |> ignore
