@@ -53,21 +53,23 @@ let parse_dev_card lst =
 
 let parseCommand input =
   let words =
-    input |> String.split_on_char ' ' |> List.map String.trim
+    input
+    |> String.split_on_char ' '
+    |> List.filter (fun s -> String.length s > 0)
   in
+
   match words with
-  | h :: t -> (
-      Types.(
-        match h with
-        | "road" -> BuildRoad (parse_hex_dir_tuple t)
-        | "settlement" -> BuildSettlement (parse_hex_dir_tuple t)
-        | "upgrade" -> UpgradeCity (parse_hex_dir_tuple t)
-        | "trade" -> OfferTrade (parse_trade t)
-        | "buydev" -> BuyDevCard
-        | "usedev" -> UseDevCard (parse_dev_card t)
-        | "end" -> EndTurn
-        | _ -> failwith "unknown command"))
+  | [ "road"; a; b ] -> Types.BuildRoad (parse_hex_dir_tuple [ a; b ])
+  | [ "settlement"; a; b ] ->
+      Types.BuildSettlement (parse_hex_dir_tuple [ a; b ])
+  | [ "upgrade"; a; b ] ->
+      Types.UpgradeCity (parse_hex_dir_tuple [ a; b ])
+  | [ "trade"; a; b; c ] -> Types.OfferTrade (parse_trade [ a; b; c ])
+  | [ "buydev" ] -> Types.BuyDevCard
+  | [ "usedev"; a ] -> Types.UseDevCard (parse_dev_card [ a ])
+  | [ "end" ] -> Types.EndTurn
   | [] -> failwith "empty command"
+  | _ -> failwith "malformed command"
 
 let main () =
   (*failwith "TODO"*)
