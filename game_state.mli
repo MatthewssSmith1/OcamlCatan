@@ -17,13 +17,13 @@ val game_to_players : t -> Player.t list
 val distribute_resources : t -> int -> t
 
 (*Player color, hex, dir, raises failure if not possible*)
-(* val build_road : t -> Types.color -> int -> int -> t
+(* val build_road : t -> int -> int -> t
 
-   val build_settlement : t -> Types.color -> int -> int -> t
+   val build_settlement : t -> int -> int -> t
 
-   val upgrade_city : t -> Types.color -> int -> int -> t
+   val upgrade_city : t -> int -> int -> t
 
-   val buy_dev_card : t -> Types.color -> t
+   val buy_dev_card : t -> t
 
    val open_trade : t -> Types.trade_offer -> t
 

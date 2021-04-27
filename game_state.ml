@@ -2,12 +2,14 @@ type t = {
   board : Board.t;
   players : Player.t list;
   trades : Types.trade_offer list;
+  devs : Types.devCard list;
 }
 
 let next_turn game =
   match game.players with
   | [] -> game
-  | h :: t -> { game with players = t @ [ Player.end_turn h ] }
+  | h :: t ->
+      { game with players = t @ [ Player.end_turn h ]; trades = [] }
 
 let current_turn game =
   match game.players with
@@ -16,8 +18,30 @@ let current_turn game =
 
 let game_to_board game = game.board
 
+let dev_list () =
+  let shuffle list =
+    Random.init (Int.of_float (Unix.time ()));
+    let random = List.map (fun c -> (Random.bits (), c)) list in
+    let sort = List.sort compare random in
+    List.map snd sort
+  in
+  let rec helper dev amount acc =
+    if amount <= 0 then acc else helper dev (amount - 1) (dev :: acc)
+  in
+  [] |> helper Types.Knight 14
+  |> helper Types.VictoryPoint 5
+  |> helper Types.YearOfPlenty 2
+  |> helper Types.Monopoly 2
+  |> helper Types.VictoryPoint 2
+  |> shuffle
+
 let make_new_game =
-  { board = Board.make_random_board (); players = []; trades = [] }
+  {
+    board = Board.make_random_board ();
+    players = [];
+    trades = [];
+    devs = dev_list ();
+  }
 
 let game_to_players game = game.players
 
@@ -76,4 +100,55 @@ let distribute_resources state input =
   in
   hex_helper state hexes
 
-let build_road state color hex dir = state
+let build_road state hex dir =
+  try
+    let color = Player.get_color (current_turn state) in
+    let new_board =
+      Board.add_road (get_player state color) hex dir state.board
+    in
+    let new_player = Player.place_road (current_turn state) in
+    replace_player { state with board = new_board } color new_player
+  with Failure x ->
+    print_string x;
+    state
+
+let build_settlement state hex dir =
+  try
+    let color = Player.get_color (current_turn state) in
+    let new_board =
+      Board.add_settlement (get_player state color) hex dir state.board
+    in
+    let new_player = Player.place_settlement (current_turn state) in
+    replace_player { state with board = new_board } color new_player
+  with Failure x ->
+    print_string x;
+    state
+
+let upgrade_city state hex dir =
+  try
+    let color = Player.get_color (current_turn state) in
+    let new_board =
+      Board.upgrade_city (get_player state color) hex dir state.board
+    in
+    let new_player = Player.place_city (current_turn state) in
+    replace_player { state with board = new_board } color new_player
+  with Failure x ->
+    print_string x;
+    state
+
+let buy_dev_card state hex dir =
+  match state.devs with
+  | [] ->
+      print_string "No More Development Cards";
+      state
+  | h :: t -> (
+      try
+        let color = Player.get_color (current_turn state) in
+        let new_player = Player.buy_dev (current_turn state) h in
+        replace_player { state with devs = t } color new_player
+      with Failure x ->
+        print_string x;
+        state)
+
+let open_trade state offer =
+  { state with trades = offer :: state.trades }

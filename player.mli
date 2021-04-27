@@ -1,11 +1,5 @@
 type t
 
-exception Not_Enough_Resources
-
-exception Not_Enough_Devs
-
-exception Not_Enough_Pieces
-
 val add_resource : Types.resource -> int -> t -> t
 
 val remove_resource : Types.resource -> int -> t -> t
