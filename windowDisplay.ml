@@ -187,9 +187,9 @@ let hex_index_of_mouse_pos pos =
 
 let pos_of_hex_index index = board_pos +.. coords_of_hex_index index
 
-let outline_rect (pos: Vec2.vec) (size: Vec2.vec) =
-  let (x, y) = ints_of_vec pos in
-  let (w, h) = ints_of_vec size in
+let outline_rect (pos : Vec2.vec) (size : Vec2.vec) =
+  let x, y = ints_of_vec pos in
+  let w, h = ints_of_vec size in
   fill_rect x y w h;
   set_color black;
   draw_rect x y w h
@@ -199,9 +199,9 @@ let outline_poly verts =
   set_color black;
   draw_poly verts
 
-let outline_ellipse (pos: Vec2.vec) (rad: Vec2.vec) =
-  let (x, y) = ints_of_vec pos in
-  let (rx, ry) = ints_of_vec rad in
+let outline_ellipse (pos : Vec2.vec) (rad : Vec2.vec) =
+  let x, y = ints_of_vec pos in
+  let rx, ry = ints_of_vec rad in
   fill_ellipse x y rx ry;
   set_color black;
   draw_ellipse x y rx ry
@@ -211,10 +211,10 @@ let fill_robber pos =
   rgb 156 156 156 |> set_color;
   outline_ellipse pos (vec_of_floats 0.25 0.12 |> scale hex_size);
   rgb 156 156 156 |> set_color;
-  let pos = pos +.. (vec_of_floats (0.) (0.25) |> scale hex_size) in
+  let pos = pos +.. (vec_of_floats 0. 0.25 |> scale hex_size) in
   outline_ellipse pos (vec_of_floats 0.23 0.3 |> scale hex_size);
   rgb 156 156 156 |> set_color;
-  let pos = pos +.. (vec_of_floats (0.) (0.3) |> scale hex_size) in
+  let pos = pos +.. (vec_of_floats 0. 0.3 |> scale hex_size) in
   outline_ellipse pos (vec_of_floats 0.21 0.21 |> scale hex_size)
 
 let fill_token pos hex =
@@ -390,30 +390,35 @@ let rec wait_next_click () =
   | Some c -> c
 
 let player_info_size = vec_of_ints 330 90
+
 let ui_bg_color = rgb 235 235 185
 
 let draw_player_info player pos =
-  let (x, y) = ints_of_vec pos in
-  let (w, h) = ints_of_vec player_info_size in
+  let x, y = ints_of_vec pos in
+  let w, h = ints_of_vec player_info_size in
   set_color ui_bg_color;
   outline_rect pos player_info_size;
   let padding = 10 in
   let square_size = h - (2 * padding) in
   Player.get_color player |> color_of_team_color |> set_color;
   fill_rect (x + padding) (y + padding) square_size square_size;
-  let (x, y) = (x + h, y + h / 2) in
+  let x, y = (x + h, y + (h / 2)) in
   let pos = vec_of_ints x y in
-  let card_size = vec_of_int (h / 2 - padding) |> scale_x 0.5 in
+  let card_size = vec_of_int ((h / 2) - padding) |> scale_x 0.5 in
   rgb 108 154 230 |> set_color;
   outline_rect pos card_size;
-  draw_string_centered (pos +.. (scale 0.5 card_size)) "?";
-  draw_string_centered (pos +.. (card_size *.. (vec_of_floats 0.5 (-0.5)))) (Player.num_resources player |> string_of_int);
-  let x = x + (x_int_of card_size) + padding in
+  draw_string_centered (pos +.. scale 0.5 card_size) "?";
+  draw_string_centered
+    (pos +.. (card_size *.. vec_of_floats 0.5 (-0.5)))
+    (Player.num_resources player |> string_of_int);
+  let x = x + x_int_of card_size + padding in
   let pos = vec_of_ints x y in
   rgb 170 111 214 |> set_color;
   outline_rect pos card_size;
-  draw_string_centered (pos +.. (scale 0.5 card_size)) "D";
-  draw_string_centered (pos +.. (card_size *.. (vec_of_floats 0.5 (-0.5)))) (Player.num_devs player |> string_of_int);
+  draw_string_centered (pos +.. scale 0.5 card_size) "D";
+  draw_string_centered
+    (pos +.. (card_size *.. vec_of_floats 0.5 (-0.5)))
+    (Player.num_devs player |> string_of_int);
   ()
 
 let rec print_clicks () =
