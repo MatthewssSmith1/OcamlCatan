@@ -95,7 +95,7 @@ open Vec2
 
 let sqrt_3 = sqrt 3.
 
-let screen_size = vec_of_ints 1220 1080
+let screen_size = vec_of_ints 1620 1080
 
 let hex_size = 110.
 
@@ -353,22 +353,6 @@ let clear color =
   let w, h = Vec2.ints_of_vec (screen_size -.. vec_of_ints 1 1) in
   Graphics.fill_rect 0 0 w h
 
-let add_peices (board : Board.t) =
-  fill_port (pos_of_hex_index 0) 4 Types.ThreeToOne;
-  fill_port (pos_of_hex_index 1) 5 (Types.TwoToOne Wood);
-  fill_port (pos_of_hex_index 2) 0 (Types.TwoToOne Ore);
-  let rd = Player.make_player Types.Red in
-  let bl = Player.make_player Types.Blue in
-  board
-  |> Board.add_settlement rd 13 3
-  |> Board.add_road rd 13 3
-  |> Board.add_settlement rd 9 1
-  |> Board.add_road rd 9 0 |> Board.add_road rd 9 5
-  |> Board.add_settlement bl 9 4
-  |> Board.add_road bl 9 3
-  |> Board.add_settlement bl 7 1
-  |> Board.add_road bl 7 0
-
 let render () = Graphics.synchronize ()
 
 let rec wait_click_end start_pos : vec option =
@@ -392,8 +376,10 @@ let rec wait_next_click () =
 let player_info_size = vec_of_ints 330 90
 let ui_bg_color = rgb 235 235 185
 
-let draw_player_info player pos =
-  let (x, y) = ints_of_vec pos in
+let draw_player_info player index =
+  let x = screen_size -.. player_info_size |> x_int_of in
+  let y = index * y_int_of player_info_size in
+  let pos = vec_of_ints x y  in
   let (w, h) = ints_of_vec player_info_size in
   set_color ui_bg_color;
   outline_rect pos player_info_size;
@@ -413,8 +399,26 @@ let draw_player_info player pos =
   rgb 170 111 214 |> set_color;
   outline_rect pos card_size;
   draw_string_centered (pos +.. (scale 0.5 card_size)) "D";
-  draw_string_centered (pos +.. (card_size *.. (vec_of_floats 0.5 (-0.5)))) (Player.num_devs player |> string_of_int);
-  ()
+  draw_string_centered (pos +.. (card_size *.. (vec_of_floats 0.5 (-0.5)))) (Player.num_devs player |> string_of_int)
+
+
+let add_peices (board : Board.t) =
+  fill_port (pos_of_hex_index 0) 4 Types.ThreeToOne;
+  fill_port (pos_of_hex_index 1) 5 (Types.TwoToOne Wood);
+  fill_port (pos_of_hex_index 2) 0 (Types.TwoToOne Ore);
+  let rd = Player.make_player Types.Red in
+  let bl = Player.make_player Types.Blue in
+  draw_player_info rd 0;
+  draw_player_info bl 1;
+  board
+  |> Board.add_settlement rd 13 3
+  |> Board.add_road rd 13 3
+  |> Board.add_settlement rd 9 1
+  |> Board.add_road rd 9 0 |> Board.add_road rd 9 5
+  |> Board.add_settlement bl 9 4
+  |> Board.add_road bl 9 3
+  |> Board.add_settlement bl 7 1
+  |> Board.add_road bl 7 0
 
 let rec print_clicks () =
   let x, y =
@@ -423,6 +427,8 @@ let rec print_clicks () =
   print_endline (x ^ ", " ^ y);
   print_clicks ()
 
+
+
 let print_board (board : Board.t) =
   let x, y = int_strings_of_vec screen_size in
   Graphics.open_graph (" " ^ x ^ "x" ^ y ^ "+700-200");
@@ -430,7 +436,7 @@ let print_board (board : Board.t) =
   Graphics.auto_synchronize false;
   clear (rgb 52 143 235);
   (* for debuggin purposes, this adds peices to the board *)
-  let board = add_peices board in
+  (* let board = add_peices board in *)
   fill_hexes board;
   fill_edges_and_verts board;
   (* let res = 2 in for x = 0 to x_int_of screen_size / res do for y = 0
