@@ -205,8 +205,8 @@ let add_road player hex dir board =
   | Some (Road _) -> failwith "Road Already Exists"
   | None -> failwith "Out Of Bounds"
   | Some Empty ->
-      let adj_edges = edge_to_adj_edges board dir hex in
-      let adj_verts = edge_to_adj_verts board dir hex in
+      let adj_edges = edge_to_adj_edges board hex dir in
+      let adj_verts = edge_to_adj_verts board hex dir in
       if
         List.fold_left
           (fun x y -> x || has_road player hex dir board)
@@ -227,8 +227,8 @@ let add_settlement player hex dir board =
   match board.vertices.(a).(b) with
   | None -> failwith "Out Of Bounds"
   | Some Empty ->
-      let adj_edges = vert_to_adj_edges board dir hex in
-      let adj_verts = vert_to_adj_verts board dir hex in
+      let adj_edges = vert_to_adj_edges board hex dir in
+      let adj_verts = vert_to_adj_verts board hex dir in
       if
         (fun x y -> x || has_road player hex dir board) false adj_edges
         || not
@@ -250,7 +250,7 @@ let add_settlement_start player hex dir board =
   match board.vertices.(a).(b) with
   | None -> failwith "Out Of Bounds"
   | Some Empty ->
-      let adj_verts = vert_to_adj_verts board dir hex in
+      let adj_verts = vert_to_adj_verts board hex dir in
       if
         not
           (List.fold_left
