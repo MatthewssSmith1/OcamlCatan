@@ -8,9 +8,9 @@ type t = {
 
 let roll_dice () =
   Random.init (Int.of_float (Unix.time ()));
-  let die_1 = Random.int 7 in
-  Random.init (Int.of_float (Unix.time ()));
-  let die_2 = Random.int 7 in
+  let die_1 = Random.int 6 + 1 in
+  Random.init (Random.int 100);
+  let die_2 = Random.int 6 + 1 in
   die_1 + die_2
 
 let next_turn game =
