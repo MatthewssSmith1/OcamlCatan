@@ -22,7 +22,6 @@ val make_random_board : unit -> t
 
 val hex_info : t -> int -> Types.hex
 
-
 val hex_to_vertices : t -> int -> Types.vertex list
 
 val hex_to_edges : t -> int -> Types.edge list
@@ -51,5 +50,7 @@ val edge_to_adj_edges : t -> int -> int -> Types.edge list
 
 val edge_to_adj_edge_coords : t -> int -> int -> (int * int) list
 
-(* val verticies_of_player : t -> Types.color -> (int * int) list
-val longest_road : t -> Types.color * int *)
+val get_robber : t -> int
+
+(* val verticies_of_player : t -> Types.color -> (int * int) list val
+   longest_road : t -> Types.color * int *)
