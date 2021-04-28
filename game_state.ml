@@ -151,19 +151,19 @@ let buy_dev_card state =
         print_string x;
         state)
 
-let accept_trade state (offer : Types.trade_offer) color =
+let accept_trade state offer request color =
   let p1 = current_turn state in
   let p2 = get_player state color in
   try
     let new_p1 =
       p1
-      |> Player.add_resource_list offer.request
-      |> Player.remove_resource_list offer.offer
+      |> Player.add_resource_list request
+      |> Player.remove_resource_list offer
     in
     let new_p2 =
       p2
-      |> Player.add_resource_list offer.offer
-      |> Player.remove_resource_list offer.request
+      |> Player.add_resource_list offer
+      |> Player.remove_resource_list request
     in
     replace_player
       (replace_player state (Player.get_color p1) new_p1)
@@ -171,3 +171,15 @@ let accept_trade state (offer : Types.trade_offer) color =
   with Failure x ->
     print_string x;
     state
+
+let make_move state input =
+  match input with
+  | Types.BuildRoad (hex, dir) -> build_road state hex dir
+  | Types.BuildSettlement (hex, dir) -> build_settlement state hex dir
+  | Types.UpgradeCity (hex, dir) -> upgrade_city state hex dir
+  | Types.OfferTrade (color, offer, request) ->
+      accept_trade state offer request color
+  | Types.BankTrade (pffer, request) -> failwith "Unimplemented"
+  | Types.BuyDevCard -> buy_dev_card state
+  | Types.UseDevCard dev -> failwith "Unimplemented"
+  | EndTurn -> next_turn state

@@ -25,8 +25,7 @@ val upgrade_city : t -> int -> int -> t
 
 val buy_dev_card : t -> t
 
-val accept_trade : t -> Types.trade_offer -> Types.color -> t
+val accept_trade :
+  t -> Types.color -> Types.resource list -> Types.resource list -> t
 
-(*val make_move : t -> Input.move -> t
-
-  val next_move : t -> Input.move -> t *)
+val make_move : t -> Input.move -> t
