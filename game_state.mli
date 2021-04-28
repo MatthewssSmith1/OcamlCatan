@@ -28,4 +28,4 @@ val buy_dev_card : t -> t
 val accept_trade :
   t -> Types.color -> Types.resource list -> Types.resource list -> t
 
-val make_move : t -> Input.move -> t
+val make_move : t -> Types.turnCommand -> t

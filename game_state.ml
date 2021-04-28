@@ -6,6 +6,13 @@ type t = {
   largest_army : (Player.t * int) option;
 }
 
+let roll_dice () =
+  Random.init (Int.of_float (Unix.time ()));
+  let die_1 = Random.int 7 in
+  Random.init (Int.of_float (Unix.time ()));
+  let die_2 = Random.int 7 in
+  die_1 + die_2
+
 let next_turn game =
   match game.players with
   | [] -> game
@@ -151,7 +158,7 @@ let buy_dev_card state =
         print_string x;
         state)
 
-let accept_trade state offer request color =
+let accept_trade state color offer request =
   let p1 = current_turn state in
   let p2 = get_player state color in
   try
@@ -178,7 +185,7 @@ let make_move state input =
   | Types.BuildSettlement (hex, dir) -> build_settlement state hex dir
   | Types.UpgradeCity (hex, dir) -> upgrade_city state hex dir
   | Types.OfferTrade (color, offer, request) ->
-      accept_trade state offer request color
+      accept_trade state color offer request
   | Types.BankTrade (pffer, request) -> failwith "Unimplemented"
   | Types.BuyDevCard -> buy_dev_card state
   | Types.UseDevCard dev -> failwith "Unimplemented"
