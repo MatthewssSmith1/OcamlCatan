@@ -19,11 +19,12 @@ val check_dev : Types.devCard -> t -> int
 
 val add_port : Types.port -> t -> t
 
-val place_road : t -> t
+(*bool = whether or not the piece is free*)
+val place_road : t -> bool -> t
 
-val place_settlement : t -> t
+val place_settlement : t -> bool -> t
 
-val place_city : t -> t
+val place_city : t -> bool -> t
 
 val buy_dev : t -> Types.devCard -> t
 
@@ -46,5 +47,10 @@ val end_turn : t -> t
 val num_resources : t -> int
 
 val num_devs : t -> int
+
+(*number of _ played, used to determine whether or not at start of game*)
+val num_roads : t -> int
+
+val num_settlements : t -> int
 
 val pieces_left : t -> int * int * int
