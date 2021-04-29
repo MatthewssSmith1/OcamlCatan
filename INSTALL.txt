@@ -1,13 +1,10 @@
 We require the installation of the graphics package which can be done by
-running "opam install graphics" if not already.
+running "opam install graphics" if not already. There are some issues with using
+the Graphics module with the built in terminal on certain systems so the 
+installation of xterm might be required.
 Our system can be installed just by downloading the code and running the
 appropriate make commands.
-We do require the installation of the ANSITerminal package which can be done by
-running "opam install ANSITerminal" if not already.
-Since we are not implementing player interaction until MS2, we recomend
-importing the files into utop in order to interact with the game state.
 The following commands are supported:
   make - builds the project and imports it all into utop 
   make build - builds the project
-  make play - builds project and runs main function, creates new board and 
-              displays it
+  make play - builds project and runs main function, starts a new game instance
