@@ -69,6 +69,8 @@ module Vec2 = struct
 
   let add_y vec other = vec +.. scale_x 0. other
 
+  let add_xy x y vec = vec +.. vec_of_floats x y
+
   (** [rotate a v] is v rotated counterclockwise around the origin by
       [a] radians *)
   let rotate angle ((x, y) : t) =
@@ -111,18 +113,17 @@ let sqrt_3 = sqrt 3.
 
 let screen_size = vec_of_ints 1620 1080
 
-let hex_size = 110.
+let hex_size = 100.
 
 let line_width = 3
 
 let hex_spacing = vec_of_floats (sqrt_3 *. hex_size) (1.5 *. hex_size)
 
 let board_size =
-  vec_of_floats (5. *. sqrt_3 *. hex_size) (31. /. 4. *. hex_size)
+  vec_of_floats (5. *. sqrt_3 *. hex_size) (8. *. hex_size)
 
-let board_pos =
-  let offset = vec_of_floats (sqrt_3 *. hex_size) (2. *. hex_size) in
-  screen_size +.. offset -.. board_size |> scale 0.5
+(* let offset = vec_of_floats (sqrt_3 *. hex_size) (2. *. hex_size) in
+   screen_size +.. offset -.. board_size |> scale 0.5 *)
 
 let color_of_resource = function
   | Types.Wood -> rgb 81 125 25
@@ -236,21 +237,21 @@ let unit_hexagon_coords : Vec2.t array =
   |]
 
 let coords_of_hex_index i =
-  let v = i |> Board.hex_coords |> vec_of_int_tpl |> swap in
+  let v =
+    i |> Board.hex_coords |> vec_of_int_tpl |> swap |> scale_y (-1.)
+    |> add_xy (-2.) (2.)
+  in
   let row_shift =
     if y_int_of v mod 2 == 0 then (0., 0.)
     else (x_of hex_spacing /. -2., 0.)
   in
-  let x, y = (v *.. hex_spacing) +.. row_shift in
-  (x, (y_of screen_size *. 0.6) -. y)
+  (v *.. hex_spacing) +.. row_shift
 
-let hex_index_of_mouse_pos pos =
-  let x, y = pos -.. board_pos in
-  let q = ((sqrt_3 /. 3. *. x) -. (1. /. 3. *. y)) /. hex_size in
-  let r = 2. /. 3. *. y /. hex_size in
-  vec_of_floats q r
+(* let hex_index_of_mouse_pos pos = let x, y = pos -.. board_pos in let
+   q = ((sqrt_3 /. 3. *. x) -. (1. /. 3. *. y)) /. hex_size in let r =
+   2. /. 3. *. y /. hex_size in vec_of_floats q r *)
 
-let pos_of_hex_index index = board_pos +.. coords_of_hex_index index
+let pos_of_hex_index index = (scale 0.5 screen_size) +.. coords_of_hex_index index
 
 let fill_robber pos =
   let pos = pos +.. (vec_of_floats (-0.4) (-0.3) |> scale hex_size) in
@@ -510,14 +511,21 @@ let draw_player_info player index =
     (outline_star (float_of_int h *. 0.1));
   ()
 
+let draw_players_ui players =
+  let rec helper index = function
+    | [] -> ()
+    | hd :: tl ->
+        draw_player_info hd index;
+        helper (index + 1) tl
+  in
+  helper 0 players
+
 let add_peices (board : Board.t) =
   fill_port 4 (pos_of_hex_index 0) Types.ThreeToOne;
   fill_port 5 (pos_of_hex_index 1) (Types.TwoToOne Wood);
   fill_port 0 (pos_of_hex_index 2) (Types.TwoToOne Ore);
   let rd = Player.make_player Types.Red in
   let bl = Player.make_player Types.Blue in
-  draw_player_info rd 0;
-  draw_player_info bl 1;
   board
   |> Board.add_settlement rd 13 3
   |> Board.add_road rd 13 3
@@ -528,33 +536,24 @@ let add_peices (board : Board.t) =
   |> Board.add_settlement bl 7 1
   |> Board.add_road bl 7 0
 
-let rec print_clicks () =
-  let x, y =
-    wait_next_click () |> hex_index_of_mouse_pos |> int_strings_of_vec
-  in
-  print_endline (x ^ ", " ^ y);
-  print_clicks ()
+(* let rec print_clicks () = let x, y = wait_next_click () |>
+   hex_index_of_mouse_pos |> int_strings_of_vec in print_endline (x ^ ",
+   " ^ y); print_clicks () *)
 
 let print_game (game : Game_state.t) =
   let board = Game_state.game_to_board game in
-  let x, y = int_strings_of_vec screen_size in
-  Graphics.open_graph (" " ^ x ^ "x" ^ y ^ "+700-200");
+  let w, h = int_strings_of_vec screen_size in
+  Graphics.open_graph (" " ^ w ^ "x" ^ h ^ "+700-200");
   Graphics.set_window_title "OCaml Catan";
   Graphics.auto_synchronize false;
   clear (rgb 52 143 235);
-  set_line_width line_width;
+  Graphics.set_line_width line_width;
   (* for debuggin purposes, this adds peices to the board *)
   let board = add_peices board in
   fill_hexes board;
   fill_edges_and_verts board;
-  (* let res = 2 in for x = 0 to x_int_of screen_size / res do for y = 0
-     to y_int_of screen_size / res do let pixel_pos = vec_of_ints (res *
-     x) (res * y) in let unrounded = pixel_pos |> hex_index_of_mouse_pos
-     in let rounded = map Float.round unrounded in let dist = abs_float
-     (distance unrounded rounded) in set_color (rgb 100 100 (255. *.
-     dist |> int_of_float)); Graphics.fill_rect (x_int_of pixel_pos)
-     (y_int_of pixel_pos) res res done done; *)
-  (* fill_robber (board |> Board.get_robber |> pos_of_hex_index); *)
+  game |> Game_state.game_to_players |> draw_players_ui;
   render ();
-  (* Graphics.loop_at_exit [] ignore *)
-  print_clicks () |> ignore
+  Graphics.loop_at_exit [] ignore
+
+(* print_clicks () |> ignore *)

@@ -42,7 +42,7 @@ let dev_list () =
   |> helper Types.VictoryPoint 2
   |> shuffle
 
-let make_new_game =
+let make_new_game () =
   {
     board = Board.make_random_board ();
     players = [];

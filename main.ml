@@ -74,8 +74,10 @@ let parseCommand input =
   | _ -> failwith "malformed command"
 
 let main () =
-  (*failwith "TODO"*)
-  let game = Game_state.make_new_game in
-  WindowDisplay.print_game game
+  let add_p color state = Game_state.add_player state color in
+
+  Game_state.make_new_game ()
+  |> add_p Types.Red |> add_p Types.Blue |> add_p Types.Orange
+  |> add_p Types.White |> WindowDisplay.print_game
 
 let () = main ()
