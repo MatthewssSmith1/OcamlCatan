@@ -4,7 +4,7 @@ val make_new_game : unit -> t
 
 val game_to_board : t -> Board.t
 
-val next_turn : t -> t
+val end_turn : t -> t
 
 val current_turn : t -> Player.t
 

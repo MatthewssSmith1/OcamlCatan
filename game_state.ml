@@ -119,7 +119,7 @@ let replace_player state color player =
     | [] -> []
     | h :: t ->
         if Player.get_color h = color then player :: t
-        else helper t color player
+        else h :: helper t color player
   in
   { state with players = helper state.players color player }
 
