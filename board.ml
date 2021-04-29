@@ -218,8 +218,10 @@ let add_road player hex dir board =
         board.edges.(a).(b) <- Some (Road (Player.get_color player));
         board)
       else (
-        print_string "Illegal Road";
-        board)
+        failwith "illegal road"
+        (* print_string "Illegal Road";
+        board *)
+        )
 
 let add_settlement player hex dir board =
   let coords = hex_coords hex in
@@ -239,9 +241,10 @@ let add_settlement player hex dir board =
         board.vertices.(a).(b) <-
           Some (Settlement (Player.get_color player));
         board)
-      else (
+      else failwith "illegal settlement"
+        (* (
         print_string "Illegal Settlement";
-        board)
+        board) *)
   | _ -> failwith "Already Exists"
 
 let add_settlement_start player hex dir board =
