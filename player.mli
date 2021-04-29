@@ -60,3 +60,5 @@ val num_roads : t -> int
 val num_settlements : t -> int
 
 val pieces_left : t -> int * int * int
+
+val victory_points : t -> int

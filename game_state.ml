@@ -21,9 +21,9 @@ let start_2_done state =
     true state.players
 
 let roll_dice () =
-  Random.init (Int.of_float (Unix.time ()));
+  (* Random.init (Int.of_float (Unix.time ())); *)
   let die_1 = Random.int 6 + 1 in
-  Random.init (Random.int 100);
+  (* Random.init (Random.int 100); *)
   let die_2 = Random.int 6 + 1 in
   die_1 + die_2
 
@@ -59,7 +59,7 @@ let end_turn game =
     | [] -> game
     | h :: t -> { game with players = t @ [ Player.end_turn h ] }
 
-let next_turn (game: t) = failwith "unimplemented"
+let next_turn (game : t) = failwith "unimplemented"
 
 let current_turn game =
   match game.players with
@@ -70,7 +70,7 @@ let game_to_board game = game.board
 
 let dev_list () =
   let shuffle list =
-    Random.init (Int.of_float (Unix.time ()));
+    (* Random.init (Int.of_float (Unix.time ())); *)
     let random = List.map (fun c -> (Random.bits (), c)) list in
     let sort = List.sort compare random in
     List.map snd sort
@@ -97,6 +97,11 @@ let make_new_game () =
   }
 
 let game_to_players game = game.players
+
+let current_player game =
+  match game.players with
+  | [] -> failwith "current_player called on game with 0 players"
+  | hd :: _ -> hd
 
 let add_player game_state color =
   {
@@ -128,8 +133,8 @@ let give_resource state color resource amount =
   in
   replace_player state color new_player
 
-let distribute_resources state input =
-  let hexes = Board.int_to_hex_list (game_to_board state) input in
+let distribute_resources state roll =
+  let hexes = Board.int_to_hex_list (game_to_board state) roll in
   let rec vert_helper state verts resource =
     match verts with
     | [] -> state
@@ -256,4 +261,8 @@ let make_move state input =
   | Types.BankTrade (pffer, request) -> failwith "Unimplemented"
   | Types.BuyDevCard -> buy_dev_card state
   | Types.UseDevCard dev -> failwith "Unimplemented"
-  | EndTurn -> end_turn state
+  | EndTurn ->
+      let roll = roll_dice () in
+      print_endline (string_of_int roll ^ " was rolled");
+      distribute_resources (end_turn state) roll
+      (* end_turn state *)

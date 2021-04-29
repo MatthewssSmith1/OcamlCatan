@@ -111,7 +111,9 @@ open Vec2
 
 let sqrt_3 = sqrt 3.
 
-let screen_size = vec_of_ints 1620 1080
+let window_size = vec_of_ints 1500 900
+
+let window_pos = scale 0.5 (vec_of_ints 1920 1080 -.. window_size)
 
 let hex_size = 100.
 
@@ -250,7 +252,7 @@ let coords_of_hex_index i =
    2. /. 3. *. y /. hex_size in vec_of_floats q r *)
 
 let pos_of_hex_index index =
-  scale 0.5 screen_size +.. coords_of_hex_index index
+  scale 0.5 window_size +.. coords_of_hex_index index
 
 let fill_robber pos =
   let pos = pos +.. (vec_of (-0.4) (-0.3) |> scale hex_size) in
@@ -396,7 +398,7 @@ let fill_edges_and_verts (board : Board.t) =
 
 let clear color =
   Graphics.set_color color;
-  fill_rect screen_size zero
+  fill_rect window_size zero
 
 let render () = Graphics.synchronize ()
 
@@ -454,7 +456,7 @@ let draw_stat
 let draw_player_info player index =
   let player_color = Player.get_color player |> color_of_team_color in
   let padding = 12 in
-  let x = screen_size -.. player_info_size |> x_int_of in
+  let x = window_size -.. player_info_size |> x_int_of in
   let y = index * (y_int_of player_info_size + padding) in
   let pos = vec_of_ints x y in
   let w, h = ints_of_vec player_info_size in
@@ -487,7 +489,7 @@ let draw_player_info player index =
   (* determine the size of and offset between the stat indicators which
      display victory points and the remaining number of settlements,
      cities, and roads *)
-  let stat_w = (x_int_of screen_size - x - (padding * 2)) / 2 in
+  let stat_w = (x_int_of window_size - x - (padding * 2)) / 2 in
   let stat_h = (h - (padding * 3)) / 2 in
   let stat_size = vec_of_ints stat_w stat_h in
   let stat_offset = stat_size +.. vec_of_int padding in
@@ -506,7 +508,7 @@ let draw_player_info player index =
   (* victory points *)
   draw_stat stat_size yellow pos
     (scale_x 0. stat_offset)
-    3
+    (Player.victory_points player)
     (outline_star (float_of_int h *. 0.1));
   ()
 
@@ -586,34 +588,24 @@ let add_peices (board : Board.t) =
    hex_index_of_mouse_pos |> int_strings_of_vec in print_endline (x ^ ",
    " ^ y); print_clicks () *)
 
-let print_game (game : Game_state.t) =
-  let board = Game_state.game_to_board game in
-  let w, h = int_strings_of_vec screen_size in
-  Graphics.open_graph (" " ^ w ^ "x" ^ h ^ "+700-200");
+let initialize () =
+  let w, h = int_strings_of_vec window_size in
+  let x, y = int_strings_of_vec window_pos in
+  Graphics.open_graph (" " ^ w ^ "x" ^ h ^ "+" ^ x ^"-" ^ y ^ "");
   Graphics.set_window_title "OCaml Catan";
   Graphics.auto_synchronize false;
+  Graphics.set_line_width line_width
+
+
+let print_game (game : Game_state.t) =
+  let board = Game_state.game_to_board game in
   clear (rgb 52 143 235);
-  Graphics.set_line_width line_width;
   (* for debuggin purposes, this adds peices to the board *)
   (* let board = add_peices board in *)
   fill_hexes board;
   fill_edges_and_verts board;
   game |> Game_state.game_to_players |> draw_players_ui;
-  draw_res_and_dev (vec_of 20. 20.)
-    [
-      (Types.Knight, 2);
-      (Types.RoadBuilding, 1);
-      (Types.YearOfPlenty, 1);
-      (Types.Monopoly, 2);
-      (Types.VictoryPoint, 1);
-    ]
-    [
-      (Types.Wood, 3);
-      (Types.Sheep, 1);
-      (Types.Wheat, 1);
-      (Types.Brick, 2);
-      (Types.Ore, 3);
-    ];
+  draw_player_hand (vec_of 20. 20.) (Game_state.current_player game);
   render ()
 
 (* ; Graphics.loop_at_exit [] ignore *)

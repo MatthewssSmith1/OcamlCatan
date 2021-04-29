@@ -289,3 +289,6 @@ let num_settlements player = 5 - player.settlements - player.cities
 
 let pieces_left player =
   (player.roads, player.settlements, player.cities)
+
+let victory_points player =
+  (5 - player.settlements) + (4 - player.cities) * 2 + (player.victoryPoint)

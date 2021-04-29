@@ -341,7 +341,7 @@ let basic =
 let make_board () = make_board_from_array basic
 
 let make_random_board () =
-  Random.init (Int.of_float (Unix.time ()));
+  (* Random.init (Int.of_float (Unix.time ())); *)
   let shuffle a =
     let n = Array.length a in
     let a = Array.copy a in

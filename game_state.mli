@@ -13,6 +13,8 @@ val add_player : t -> Types.color -> t
 
 val game_to_players : t -> Player.t list
 
+val current_player : t -> Player.t
+
 (**For giving resources at the start of each turn*)
 val distribute_resources : t -> int -> t
 

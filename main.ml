@@ -60,6 +60,15 @@ let parse_command input =
     |> List.filter (fun s -> String.length s > 0)
   in
 
+  let words = match words with
+    | "r" :: tl -> "settlement" :: tl
+    | "s" :: tl -> "settlement" :: tl
+    | "u" :: tl -> "upgrade" :: tl
+    | "t" :: tl -> "trade" :: tl
+    | "b" :: tl -> "bank" :: tl
+    | "e" :: tl -> "end" :: tl
+    | w -> w in
+
   match words with
   | [ "road"; a; b ] -> Types.BuildRoad (parse_hex_dir_tuple [ a; b ])
   | [ "settlement"; a; b ] ->
@@ -78,9 +87,10 @@ let parse_command input =
   | _ -> failwith "malformed command"
 
 let rec next_state game =
+  let err_msg = "invalid command: " in
   let print_err = function
-    | Failure str -> print_endline ("invalid command: " ^ str)
-    | _ -> print_endline "invalid command"
+    | Failure str -> print_endline (err_msg ^ str)
+    | _ -> print_endline err_msg
   in
   print_string "> ";
   try read_line () |> parse_command |> Game_state.make_move game with
@@ -90,6 +100,7 @@ let rec next_state game =
       next_state game
 
 let main () =
+  Random.init (Int.of_float (Unix.time ()));
   let add_p color state = Game_state.add_player state color in
 
   let game =
@@ -104,6 +115,7 @@ let main () =
     turn new_state
   in
 
+  WindowDisplay.initialize ();
   WindowDisplay.print_game game;
   try
   turn game
