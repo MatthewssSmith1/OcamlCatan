@@ -11,13 +11,17 @@ type t = {
 let start_1_done state =
   List.fold_left
     (fun x y ->
-      x && Player.num_roads y = 1 && Player.num_settlements y = 1)
+      x
+      && Player.num_roads y = 1
+      && Player.num_settlements y + Player.num_cities y = 1)
     true state.players
 
 let start_2_done state =
   List.fold_left
     (fun x y ->
-      x && Player.num_roads y = 2 && Player.num_settlements y = 2)
+      x
+      && Player.num_roads y = 2
+      && Player.num_settlements y + Player.num_cities y = 2)
     true state.players
 
 let roll_dice () =
@@ -182,8 +186,10 @@ let build_settlement state hex dir free =
   try
     let player = current_turn state in
     if
-      (state.phase = 0 && Player.num_settlements player > 0)
-      || (state.phase = 1 && Player.num_settlements player > 1)
+      state.phase = 0
+      && Player.num_settlements player + Player.num_cities player > 0
+      || state.phase = 1
+         && Player.num_settlements player + Player.num_cities player > 1
     then (
       print_string "You can not add additional settlements at this time";
       state)
