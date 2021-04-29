@@ -4,8 +4,8 @@ type t = {
   devs : Types.devCard list;
   longest_road : (Player.t * int) option;
   largest_army : (Player.t * int) option;
-  start_1 : bool;
-  start_2 : bool;
+  (*0 for start of game, 1 for start of game part 2, 2 for normal play*)
+  phase : int;
 }
 
 let start_1_done state =
@@ -28,11 +28,11 @@ let roll_dice () =
   die_1 + die_2
 
 let end_turn game =
-  let cycle h t game = { game with players = t @ [ Player.end_turn h ] } in
-  if game.start_2 then
-    match game.players with
-    | [] -> game
-    | h :: t -> cycle h t game
+  let cycle h t game =
+    { game with players = t @ [ Player.end_turn h ] }
+  in
+  if game.phase = 2 then
+    match game.players with [] -> game | h :: t -> cycle h t game
   else if start_2_done game then
     match game.players with
     | [] -> game
@@ -40,12 +40,10 @@ let end_turn game =
         {
           game with
           players = List.rev (t @ [ Player.end_turn h ]);
-          start_2 = true;
+          phase = 2;
         }
-  else if game.start_1 then
-    match game.players with
-    | [] -> game
-    | h :: t -> cycle h t game
+  else if game.phase = 1 then
+    match game.players with [] -> game | h :: t -> cycle h t game
   else if start_1_done game then
     match game.players with
     | [] -> game
@@ -53,12 +51,9 @@ let end_turn game =
         {
           game with
           players = List.rev (t @ [ Player.end_turn h ]);
-          start_1 = true;
+          phase = 1;
         }
-  else
-    match game.players with
-    | [] -> game
-    | h :: t -> cycle h t game
+  else match game.players with [] -> game | h :: t -> cycle h t game
 
 let next_turn (game : t) = failwith "unimplemented"
 
@@ -93,8 +88,7 @@ let make_new_game () =
     devs = dev_list ();
     longest_road = None;
     largest_army = None;
-    start_1 = false;
-    start_2 = false;
+    phase = 0;
   }
 
 let game_to_players game = game.players
@@ -158,8 +152,8 @@ let build_road state hex dir free =
   try
     let player = current_turn state in
     if
-      ((not state.start_1) && Player.num_roads player > 0)
-      || ((not state.start_2) && Player.num_roads player > 1)
+      (state.phase = 0 && Player.num_roads player > 0)
+      || (state.phase = 1 && Player.num_roads player > 1)
     then (
       print_string "You can not add additional roads at this time";
       state)
@@ -172,12 +166,24 @@ let build_road state hex dir free =
     print_string x;
     state
 
+let distribute_resource_vertex state hex dir player =
+  let board = state.board in
+  let hex_list = Board.vert_to_adj_hexes board hex dir in
+  let rec helper list player =
+    match list with
+    | [] -> player
+    | Types.Desert :: t -> helper t player
+    | Types.Other (_, resource) :: t ->
+        helper t (Player.add_resource resource 1 player)
+  in
+  helper hex_list player
+
 let build_settlement state hex dir free =
   try
     let player = current_turn state in
     if
-      ((not state.start_1) && Player.num_settlements player > 0)
-      || ((not state.start_2) && Player.num_settlements player > 1)
+      (state.phase = 0 && Player.num_settlements player > 0)
+      || (state.phase = 1 && Player.num_settlements player > 1)
     then (
       print_string "You can not add additional settlements at this time";
       state)
@@ -188,10 +194,17 @@ let build_settlement state hex dir free =
           (get_player state color)
           hex dir state.board
       in
-      let new_player =
-        Player.place_settlement (current_turn state) free
-      in
-      replace_player { state with board = new_board } color new_player
+      if state.phase = 1 then
+        let new_player =
+          distribute_resource_vertex state hex dir
+            (Player.place_settlement (current_turn state) free)
+        in
+        replace_player { state with board = new_board } color new_player
+      else
+        let new_player =
+          Player.place_settlement (current_turn state) free
+        in
+        replace_player { state with board = new_board } color new_player
   with Failure x ->
     print_string x;
     state
@@ -246,10 +259,10 @@ let accept_trade state color offer request =
 let make_move state input =
   match input with
   | Types.BuildRoad (hex, dir) ->
-      if state.start_2 then build_road state hex dir false
+      if state.phase = 2 then build_road state hex dir false
       else build_road state hex dir true
   | Types.BuildSettlement (hex, dir) ->
-      if state.start_2 then build_settlement state hex dir false
+      if state.phase = 2 then build_settlement state hex dir false
       else build_settlement state hex dir true
   | Types.UpgradeCity (hex, dir) -> upgrade_city state hex dir false
   | Types.OfferTrade (color, offer, request) ->
@@ -261,4 +274,4 @@ let make_move state input =
       let roll = roll_dice () in
       print_endline (string_of_int roll ^ " was rolled");
       distribute_resources (end_turn state) roll
-      (* end_turn state *)
+(* end_turn state *)
