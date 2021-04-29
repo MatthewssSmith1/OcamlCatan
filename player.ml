@@ -249,6 +249,15 @@ let to_string t =
   ^ string_of_int t.settlements
   ^ "Remaining Cities: " ^ string_of_int t.cities
 
+let resources_of player =
+  [
+    (Types.Wood, player.wood);
+    (Types.Sheep, player.sheep);
+    (Types.Wheat, player.wheat);
+    (Types.Brick, player.brick);
+    (Types.Ore, player.ore)
+  ]
+
 let num_resources player =
   player.wood + player.sheep + player.wheat + player.brick + player.ore
 

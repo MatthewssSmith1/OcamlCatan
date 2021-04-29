@@ -59,6 +59,8 @@ let end_turn game =
     | [] -> game
     | h :: t -> { game with players = t @ [ Player.end_turn h ] }
 
+let next_turn (game: t) = failwith "unimplemented"
+
 let current_turn game =
   match game.players with
   | [] -> failwith "No players found"

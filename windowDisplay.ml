@@ -7,11 +7,11 @@ module Vec2 = struct
 
   let zero : t = (0., 0.)
 
-  let i : t = (1., 0.)
+  let unit_i : t = (1., 0.)
 
-  let j : t = (0., 1.)
+  let unit_j : t = (0., 1.)
 
-  let vec_of_floats x y : t = (x, y)
+  let vec_of x y : t = (x, y)
 
   let vec_of_float a : t = (a, a)
 
@@ -57,19 +57,19 @@ module Vec2 = struct
 
   let scale_int s = scale (float_of_int s)
 
-  let scale_x s = ( *.. ) (vec_of_floats s 1.)
+  let scale_x s = ( *.. ) (vec_of s 1.)
 
-  let scale_y s = ( *.. ) (vec_of_floats 1. s)
+  let scale_y s = ( *.. ) (vec_of 1. s)
 
   let scale_xy xs ys vec = vec |> scale_x xs |> scale_y ys
 
-  let swap ((x, y) : t) = vec_of_floats y x
+  let swap ((x, y) : t) = vec_of y x
 
-  let add_x vec other = vec +.. scale_y 0. other
+  let add_to_x dx ((x, y) : t) : t = (x +. dx, y)
 
-  let add_y vec other = vec +.. scale_x 0. other
+  let add_to_y dy ((x, y) : t) : t = (x, y +. dy)
 
-  let add_xy x y vec = vec +.. vec_of_floats x y
+  let add_xy x y vec = vec +.. vec_of x y
 
   (** [rotate a v] is v rotated counterclockwise around the origin by
       [a] radians *)
@@ -117,28 +117,9 @@ let hex_size = 100.
 
 let line_width = 3
 
-let hex_spacing = vec_of_floats (sqrt_3 *. hex_size) (1.5 *. hex_size)
+let hex_spacing = vec_of sqrt_3 1.5 |> scale hex_size
 
-let board_size =
-  vec_of_floats (5. *. sqrt_3 *. hex_size) (8. *. hex_size)
-
-(* let offset = vec_of_floats (sqrt_3 *. hex_size) (2. *. hex_size) in
-   screen_size +.. offset -.. board_size |> scale 0.5 *)
-
-let color_of_resource = function
-  | Types.Wood -> rgb 81 125 25
-  | Types.Sheep -> rgb 142 217 104
-  | Types.Wheat -> rgb 240 173 0
-  | Types.Brick -> rgb 156 67 0
-  | Types.Ore -> rgb 123 111 131
-
-let color_of_hex = function
-  | Types.Desert -> rgb 212 212 133
-  | Other (_, r) -> color_of_resource r
-
-let color_of_port = function
-  | Types.ThreeToOne -> white
-  | Types.TwoToOne r -> color_of_resource r
+let board_size = vec_of (5. *. sqrt_3) 8. |> scale hex_size
 
 let draw_string_centered text pos =
   let x, y =
@@ -186,7 +167,7 @@ let outline_poly verts =
 
 let unit_star_verts =
   let make_vert i _ =
-    Vec2.j
+    Vec2.unit_j
     |> rotate_degrees (36. *. float_of_int i)
     |> scale (float_of_int ((i + 1) mod 2) +. 0.7)
   in
@@ -206,6 +187,21 @@ let outline_ellipse rad pos =
   draw_ellipse x y rx ry
 
 let outline_circle rad = outline_ellipse (vec_of_float rad)
+
+let set_color_resource = function
+  | Types.Wood -> set_color_rgb 81 125 25
+  | Types.Sheep -> set_color_rgb 142 217 104
+  | Types.Wheat -> set_color_rgb 240 173 0
+  | Types.Brick -> set_color_rgb 156 67 0
+  | Types.Ore -> set_color_rgb 123 111 131
+
+let set_color_hex = function
+  | Types.Desert -> set_color_rgb 212 212 133
+  | Other (_, r) -> set_color_resource r
+
+let set_color_port = function
+  | Types.ThreeToOne -> set_color white
+  | Types.TwoToOne r -> set_color_resource r
 
 (** [indicies_to_draw i] is a list of vertex/edge indicies which the hex
     at index [i] is responsible for drawing. All hexes draw the three
@@ -239,7 +235,7 @@ let unit_hexagon_coords : Vec2.t array =
 let coords_of_hex_index i =
   let v =
     i |> Board.hex_coords |> vec_of_int_tpl |> swap |> scale_y (-1.)
-    |> add_xy (-2.) (2.)
+    |> add_xy (-2.) 2.
   in
   let row_shift =
     if y_int_of v mod 2 == 0 then (0., 0.)
@@ -251,18 +247,19 @@ let coords_of_hex_index i =
    q = ((sqrt_3 /. 3. *. x) -. (1. /. 3. *. y)) /. hex_size in let r =
    2. /. 3. *. y /. hex_size in vec_of_floats q r *)
 
-let pos_of_hex_index index = (scale 0.5 screen_size) +.. coords_of_hex_index index
+let pos_of_hex_index index =
+  scale 0.5 screen_size +.. coords_of_hex_index index
 
 let fill_robber pos =
-  let pos = pos +.. (vec_of_floats (-0.4) (-0.3) |> scale hex_size) in
+  let pos = pos +.. (vec_of (-0.4) (-0.3) |> scale hex_size) in
   set_color_rgb 156 156 156;
-  outline_ellipse (vec_of_floats 0.25 0.12 |> scale hex_size) pos;
+  outline_ellipse (vec_of 0.25 0.12 |> scale hex_size) pos;
   set_color_rgb 156 156 156;
-  let pos = pos +.. (vec_of_floats 0. 0.25 |> scale hex_size) in
-  outline_ellipse (vec_of_floats 0.23 0.3 |> scale hex_size) pos;
+  let pos = pos +.. vec_of 0. (0.25 *. hex_size) in
+  outline_ellipse (vec_of 0.23 0.3 |> scale hex_size) pos;
   set_color_rgb 156 156 156;
-  let pos = pos +.. (vec_of_floats 0. 0.3 |> scale hex_size) in
-  outline_ellipse (vec_of_floats 0.21 0.21 |> scale hex_size) pos
+  let pos = pos +.. (vec_of 0. 0.3 |> scale hex_size) in
+  outline_ellipse (vec_of 0.21 0.21 |> scale hex_size) pos
 
 let fill_token hex pos =
   match Types.number_of_hex hex with
@@ -275,7 +272,7 @@ let fill_token hex pos =
       draw_string_centered (string_of_int n) pos
 
 let fill_hex hex pos =
-  hex |> color_of_hex |> set_color;
+  set_color_hex hex;
   let map_coord v = scale hex_size v +.. pos |> ints_of_vec in
   let verts = unit_hexagon_coords |> Array.map map_coord in
   outline_poly verts;
@@ -326,7 +323,7 @@ let fill_vertex (vertex : Types.vertex) dir hex_pos =
     vertex to another which a road occupies. [x_of road_size] is one
     half the width of a road in the same absolute units as
     [y_of road_size]. *)
-let road_size = vec_of_floats 0.065 0.3
+let road_size = vec_of 0.065 0.3
 
 let unit_road_coords : Vec2.t array =
   [|
@@ -362,8 +359,8 @@ let port_width = 0.6
 let port_height = port_width *. sqrt_3 /. 2.
 
 let fill_port dir hex_pos (port : Types.port) =
-  port |> color_of_port |> set_color;
-  let j = vec_of_floats 0. 1. |> Vec2.rotate_degrees (-30.) in
+  set_color_port port;
+  let j = vec_of 0. 1. |> Vec2.rotate_degrees (-30.) in
   let i = j |> Vec2.rotate_degrees (-90.) in
   let map_coord vert =
     vert
@@ -464,7 +461,7 @@ let draw_player_info player index =
   fill_rect player_info_size pos;
   (* draw rect on left to show which team's color *)
   set_color player_color;
-  fill_rect (vec_of_floats 0.2 1. |> scale_int h) pos;
+  fill_rect (vec_of 0.2 1. |> scale_int h) pos;
   (* outline the ui rect *)
   set_color black;
   draw_rect player_info_size pos;
@@ -503,7 +500,7 @@ let draw_player_info player index =
     (outline_circle (float_of_int h *. 0.1));
   (* road *)
   draw_stat' stat_offset roads
-    (outline_centered_rect (vec_of_floats 0.07 0.3 |> scale_int h));
+    (outline_centered_rect (vec_of 0.07 0.3 |> scale_int h));
   (* victory points *)
   draw_stat stat_size yellow pos
     (scale_x 0. stat_offset)
@@ -519,6 +516,28 @@ let draw_players_ui players =
         helper (index + 1) tl
   in
   helper 0 players
+
+let card_size = vec_of 0.65 1. |> scale 80.
+
+(* distance (pixels) between cards *)
+let card_gap = x_of card_size /. 3.
+
+(* distance (pixels) between groups of cards (different resource types) *)
+let card_group_gap = vec_of (x_of card_size *. 0.8) (0.)
+
+let rec draw_hand pos = function
+  | [] -> ()
+  | (res, count) :: tl when count <> 0 ->
+      for i = 0 to count - 1 do
+        set_color_resource res;
+        outline_rect card_size
+          (pos |> add_to_x (float_of_int i *. card_gap))
+      done;
+      let dx =
+        count - 1 |> float_of_int |> ( *. ) card_gap
+      in
+      draw_hand (pos |> add_to_x dx |> ( +.. ) card_group_gap) tl
+  | _ :: tl -> draw_hand pos tl
 
 let add_peices (board : Board.t) =
   fill_port 4 (pos_of_hex_index 0) Types.ThreeToOne;
@@ -553,6 +572,14 @@ let print_game (game : Game_state.t) =
   fill_hexes board;
   fill_edges_and_verts board;
   game |> Game_state.game_to_players |> draw_players_ui;
+  draw_hand (vec_of 20. 20.)
+    [
+      (Types.Wood, 3);
+      (Types.Sheep, 1);
+      (Types.Wheat, 1);
+      (Types.Brick, 2);
+      (Types.Ore, 3);
+    ];
   render ();
   Graphics.loop_at_exit [] ignore
 
