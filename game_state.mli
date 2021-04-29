@@ -13,10 +13,10 @@ val add_player : t -> Types.color -> t
 
 val game_to_players : t -> Player.t list
 
-(*For giving resources at the start of each turn*)
+(**For giving resources at the start of each turn*)
 val distribute_resources : t -> int -> t
 
-(*Player color, hex, dir, raises failure if not possible*)
+(**Player color, hex, dir, raises failure if not possible*)
 val build_road : t -> int -> int -> t
 
 val build_settlement : t -> int -> int -> t

@@ -1,39 +1,39 @@
 open Graphics
 
 module Vec2 = struct
-  type vec = float * float
+  type t = float * float
 
   let pi = 3.141592653
 
-  let zero : vec = (0., 0.)
+  let zero : t = (0., 0.)
 
-  let i : vec = (1., 0.)
+  let i : t = (1., 0.)
 
-  let j : vec = (0., 1.)
+  let j : t = (0., 1.)
 
-  let vec_of_floats x y : vec = (x, y)
+  let vec_of_floats x y : t = (x, y)
 
-  let vec_of_float a : vec = (a, a)
+  let vec_of_float a : t = (a, a)
 
-  let vec_of_ints x y : vec = (float_of_int x, float_of_int y)
+  let vec_of_ints x y : t = (float_of_int x, float_of_int y)
 
-  let vec_of_int a : vec = (float_of_int a, float_of_int a)
+  let vec_of_int a : t = (float_of_int a, float_of_int a)
 
-  let vec_of_int_tpl (x, y) : vec = (float_of_int x, float_of_int y)
+  let vec_of_int_tpl (x, y) : t = (float_of_int x, float_of_int y)
 
-  let print_vec ((x, y) : vec) =
+  let print_vec ((x, y) : t) =
     print_string
       ("<" ^ string_of_float x ^ ", " ^ string_of_float y ^ ">\n")
 
-  let x_of ((x, y) : vec) = x
+  let x_of ((x, y) : t) = x
 
-  let y_of ((x, y) : vec) = y
+  let y_of ((x, y) : t) = y
 
-  let x_int_of ((x, y) : vec) = int_of_float x
+  let x_int_of ((x, y) : t) = int_of_float x
 
-  let y_int_of ((x, y) : vec) = int_of_float y
+  let y_int_of ((x, y) : t) = int_of_float y
 
-  let map (f : float -> 'a) ((x, y) : vec) : 'a * 'a = (f x, f y)
+  let map (f : float -> 'a) ((x, y) : t) : 'a * 'a = (f x, f y)
 
   let ints_of_vec = map int_of_float
 
@@ -42,7 +42,7 @@ module Vec2 = struct
   let int_strings_of_vec =
     map (fun fl -> fl |> int_of_float |> string_of_int)
 
-  let element_wise_op (op : float -> float -> float) v1 v2 : vec =
+  let element_wise_op (op : float -> float -> float) v1 v2 : t =
     let x = op (x_of v1) (x_of v2) in
     let y = op (y_of v1) (y_of v2) in
     (x, y)
@@ -63,7 +63,7 @@ module Vec2 = struct
 
   let scale_xy xs ys vec = vec |> scale_x xs |> scale_y ys
 
-  let swap ((x, y) : vec) = vec_of_floats y x
+  let swap ((x, y) : t) = vec_of_floats y x
 
   let add_x vec other = vec +.. scale_y 0. other
 
@@ -71,7 +71,7 @@ module Vec2 = struct
 
   (** [rotate a v] is v rotated counterclockwise around the origin by
       [a] radians *)
-  let rotate angle ((x, y) : vec) =
+  let rotate angle ((x, y) : t) =
     let cos_a = cos angle in
     let sin_a = sin angle in
     let new_x = (x *. cos_a) -. (y *. sin_a) in
@@ -84,12 +84,12 @@ module Vec2 = struct
 
   let rotate_dir dir = rotate ((dir - 1 |> float_of_int) *. pi /. -3.)
 
-  let distance ((x1, y1) : vec) ((x2, y2) : vec) =
+  let distance ((x1, y1) : t) ((x2, y2) : t) =
     let xd = x1 -. x2 in
     let yd = y1 -. y2 in
     sqrt ((xd *. xd) +. (yd *. yd))
 
-  let cube_round ((x, y) : vec) =
+  let cube_round ((x, y) : t) =
     let z = -.x -. y in
     let rx = x |> Float.round in
     let ry = y |> Float.round in
@@ -197,7 +197,7 @@ let outline_star radius pos =
   in
   unit_star_verts |> Array.map map_coord |> outline_poly
 
-let outline_ellipse (rad : Vec2.vec) (pos : Vec2.vec) =
+let outline_ellipse rad pos =
   let x, y = ints_of_vec pos in
   let rx, ry = ints_of_vec rad in
   fill_ellipse x y rx ry;
@@ -225,7 +225,7 @@ let indicies_to_draw i =
   | 12 -> [ 4 ]
   | _ -> []
 
-let unit_hexagon_coords : Vec2.vec array =
+let unit_hexagon_coords : Vec2.t array =
   [|
     (0., 1.);
     (sqrt_3 /. 2., 0.5);
@@ -275,7 +275,7 @@ let fill_token hex pos =
 
 let fill_hex hex pos =
   hex |> color_of_hex |> set_color;
-  let map_coord (v : vec) = scale hex_size v +.. pos |> ints_of_vec in
+  let map_coord v = scale hex_size v +.. pos |> ints_of_vec in
   let verts = unit_hexagon_coords |> Array.map map_coord in
   outline_poly verts;
   fill_token hex pos
@@ -296,13 +296,13 @@ let color_of_team_color = function
 
 let set_color_team team = team |> color_of_team_color |> set_color
 
-let unit_triangle_coords : Vec2.vec array =
+let unit_triangle_coords : Vec2.t array =
   [|
     (0., sqrt_3 *. 2. /. 3.); (1., sqrt_3 /. -3.); (-1., sqrt_3 /. -3.);
   |]
 
 let outline_tri size flipped pos =
-  let map_coord (v : vec) =
+  let map_coord v =
     scale size v
     |> scale_y (if flipped then -1. else 1.)
     |> ( +.. ) pos |> ints_of_vec
@@ -327,7 +327,7 @@ let fill_vertex (vertex : Types.vertex) dir hex_pos =
     [y_of road_size]. *)
 let road_size = vec_of_floats 0.065 0.3
 
-let unit_road_coords : Vec2.vec array =
+let unit_road_coords : Vec2.t array =
   [|
     road_size;
     scale_y (-1.) road_size;
@@ -362,7 +362,7 @@ let port_height = port_width *. sqrt_3 /. 2.
 
 let fill_port dir hex_pos (port : Types.port) =
   port |> color_of_port |> set_color;
-  let j = Vec2.vec_of_floats 0. 1. |> Vec2.rotate_degrees (-30.) in
+  let j = vec_of_floats 0. 1. |> Vec2.rotate_degrees (-30.) in
   let i = j |> Vec2.rotate_degrees (-90.) in
   let map_coord vert =
     vert
@@ -400,7 +400,7 @@ let clear color =
 
 let render () = Graphics.synchronize ()
 
-let rec wait_click_end start_pos : vec option =
+let rec wait_click_end start_pos : Vec2.t option =
   let { mouse_x; mouse_y; button } =
     wait_next_event [ Button_up; Mouse_motion ]
   in
@@ -409,7 +409,7 @@ let rec wait_click_end start_pos : vec option =
   else if button_down () = false then Some pos
   else wait_click_end start_pos
 
-let wait_click_start () : vec option =
+let wait_click_start () : Vec2.t option =
   let { mouse_x; mouse_y; button } = wait_next_event [ Button_down ] in
   (mouse_x, mouse_y) |> vec_of_int_tpl |> wait_click_end
 
@@ -443,7 +443,7 @@ let draw_stat
     pos
     offset
     num
-    (draw_icon : Vec2.vec -> unit) =
+    (draw_icon : Vec2.t -> unit) =
   let pos = pos +.. offset in
   set_color player_color;
   let icon_pos = size |> scale_xy 0.25 0.5 |> ( +.. ) pos in
