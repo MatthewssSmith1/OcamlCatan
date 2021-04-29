@@ -59,6 +59,8 @@ let end_turn game =
     | [] -> game
     | h :: t -> { game with players = t @ [ Player.end_turn h ] }
 
+let next_turn (game: t) = failwith "unimplemented"
+
 let current_turn game =
   match game.players with
   | [] -> failwith "No players found"
@@ -83,7 +85,7 @@ let dev_list () =
   |> helper Types.VictoryPoint 2
   |> shuffle
 
-let make_new_game =
+let make_new_game () =
   {
     board = Board.make_random_board ();
     players = [];

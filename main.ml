@@ -51,7 +51,9 @@ let parse_dev_card lst =
   | [ d ] -> d |> String.lowercase_ascii |> string_to_dev_card
   | _ -> failwith "bad dev card"
 
-let parseCommand input =
+exception Quit
+
+let parse_command input =
   let words =
     input
     |> String.split_on_char ' '
@@ -70,12 +72,42 @@ let parseCommand input =
   | [ "buydev" ] -> Types.BuyDevCard
   | [ "usedev"; a ] -> Types.UseDevCard (parse_dev_card [ a ])
   | [ "end" ] -> Types.EndTurn
+  (* raises Quit up the whole call stack to main *)
+  | [ "quit" ] -> raise Quit
   | [] -> failwith "empty command"
   | _ -> failwith "malformed command"
 
+let rec next_state game =
+  let print_err = function
+    | Failure str -> print_endline ("invalid command: " ^ str)
+    | _ -> print_endline "invalid command"
+  in
+  print_string "> ";
+  try read_line () |> parse_command |> Game_state.make_move game with
+  | Quit -> raise Quit
+  | f ->
+      print_err f;
+      next_state game
+
 let main () =
-  (*failwith "TODO"*)
-  let game = Game_state.make_new_game in
-  WindowDisplay.print_game game
+  let add_p color state = Game_state.add_player state color in
+
+  let game =
+    Game_state.make_new_game ()
+    |> add_p Types.Red |> add_p Types.Blue |> add_p Types.Orange
+    |> add_p Types.White
+  in
+
+  let rec turn game =
+    let new_state = next_state game in
+    WindowDisplay.print_game new_state;
+    turn new_state
+  in
+
+  WindowDisplay.print_game game;
+  try
+  turn game
+  with Quit -> ();
+  ()
 
 let () = main ()

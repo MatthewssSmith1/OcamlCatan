@@ -1,6 +1,6 @@
 type t
 
-val make_new_game : t
+val make_new_game : unit -> t
 
 val game_to_board : t -> Board.t
 
