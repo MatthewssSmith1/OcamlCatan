@@ -134,9 +134,11 @@ let draw_string_centered text pos =
     https://discuss.ocaml.org/t/graphics-set-font-size/2752 becuase
     [Graphics.set_text_size s] does not work. *)
 let set_font_size size =
-  "-*-fixed-medium-r-semicondensed--" ^ (size |> string_of_int)
-  ^ "-*-*-*-*-*-iso8859-1"
-  |> set_font
+  try
+    "-*-fixed-medium-r-semicondensed--" ^ (size |> string_of_int)
+    ^ "-*-*-*-*-*-iso8859-1"
+    |> set_font
+  with _ -> ()
 
 let set_font_size_float size = size |> int_of_float |> set_font_size
 
@@ -480,7 +482,7 @@ let draw_player_info player index =
   draw_card_indicator dev_card_color "D" num_devs card_size pos;
   (* move draw pos for stat indicators *)
   let x = x + x_int_of card_size + padding in
-  let y = y - (h / 2) + padding in
+  let y = y - (h / 2) + (padding / 2) in
   let pos = vec_of_ints x y in
   (* determine the size of and offset between the stat indicators which
      display victory points and the remaining number of settlements,
@@ -520,24 +522,49 @@ let draw_players_ui players =
 let card_size = vec_of 0.65 1. |> scale 80.
 
 (* distance (pixels) between cards *)
-let card_gap = x_of card_size /. 3.
+let res_card_gap = x_of card_size /. 3.
 
 (* distance (pixels) between groups of cards (different resource types) *)
-let card_group_gap = vec_of (x_of card_size *. 0.8) (0.)
+let res_group_gap = vec_of (x_of card_size *. 0.8) 0.
 
-let rec draw_hand pos = function
+let dev_card_gap = scale_xy 1.1 0. card_size
+
+let string_of_dev = function
+  | Types.Knight -> "K"
+  | Types.RoadBuilding -> "RB"
+  | Types.YearOfPlenty -> "YP"
+  | Types.Monopoly -> "M"
+  | Types.VictoryPoint -> "VP"
+
+let rec draw_devs pos = function
   | [] -> ()
+  | (dev, count) :: tl when count <> 0 ->
+      for i = 0 to count - 1 do
+        set_color dev_card_color;
+        let draw_pos = pos +.. scale_int i dev_card_gap in
+        outline_rect card_size draw_pos;
+        draw_string_centered (string_of_dev dev)
+          (draw_pos +.. scale 0.5 card_size)
+      done;
+      draw_devs (pos +.. scale_int count dev_card_gap) tl
+  | _ :: tl -> draw_devs pos tl
+
+let rec draw_res_and_dev pos devs = function
+  | [] -> draw_devs (add_to_x (x_of res_group_gap) pos) devs
   | (res, count) :: tl when count <> 0 ->
       for i = 0 to count - 1 do
         set_color_resource res;
         outline_rect card_size
-          (pos |> add_to_x (float_of_int i *. card_gap))
+          (pos |> add_to_x (float_of_int i *. res_card_gap))
       done;
-      let dx =
-        count - 1 |> float_of_int |> ( *. ) card_gap
-      in
-      draw_hand (pos |> add_to_x dx |> ( +.. ) card_group_gap) tl
-  | _ :: tl -> draw_hand pos tl
+      let dx = count - 1 |> float_of_int |> ( *. ) res_card_gap in
+      draw_res_and_dev (add_to_x dx pos +.. res_group_gap) devs tl
+  | _ :: tl -> draw_res_and_dev pos devs tl
+
+let draw_player_hand pos player =
+  let devs = Player.new_devs_of player in
+  let ress = Player.resources_of player in
+  draw_res_and_dev pos devs ress
 
 let add_peices (board : Board.t) =
   fill_port 4 (pos_of_hex_index 0) Types.ThreeToOne;
@@ -568,11 +595,18 @@ let print_game (game : Game_state.t) =
   clear (rgb 52 143 235);
   Graphics.set_line_width line_width;
   (* for debuggin purposes, this adds peices to the board *)
-  let board = add_peices board in
+  (* let board = add_peices board in *)
   fill_hexes board;
   fill_edges_and_verts board;
   game |> Game_state.game_to_players |> draw_players_ui;
-  draw_hand (vec_of 20. 20.)
+  draw_res_and_dev (vec_of 20. 20.)
+    [
+      (Types.Knight, 2);
+      (Types.RoadBuilding, 1);
+      (Types.YearOfPlenty, 1);
+      (Types.Monopoly, 2);
+      (Types.VictoryPoint, 1);
+    ]
     [
       (Types.Wood, 3);
       (Types.Sheep, 1);
@@ -580,7 +614,8 @@ let print_game (game : Game_state.t) =
       (Types.Brick, 2);
       (Types.Ore, 3);
     ];
-  render ();
-  Graphics.loop_at_exit [] ignore
+  render ()
+
+(* ; Graphics.loop_at_exit [] ignore *)
 
 (* print_clicks () |> ignore *)

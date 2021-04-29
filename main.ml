@@ -73,11 +73,30 @@ let parseCommand input =
   | [] -> failwith "empty command"
   | _ -> failwith "malformed command"
 
+let rec next_state game =
+  let print_err = function
+    | Failure str -> print_endline ("invalid command: " ^ str)
+    | _ -> print_endline "invalid command"
+  in
+  print_string "> ";
+  try read_line () |> parseCommand |> Game_state.make_move game
+  with f ->
+    print_err f;
+    next_state game
+
 let main () =
   let add_p color state = Game_state.add_player state color in
 
-  Game_state.make_new_game ()
+  let game = Game_state.make_new_game ()
   |> add_p Types.Red |> add_p Types.Blue |> add_p Types.Orange
-  |> add_p Types.White |> WindowDisplay.print_game
+  |> add_p Types.White in
+
+  let rec turn game =
+    let new_state = next_state game in
+    WindowDisplay.print_game new_state;
+    turn new_state in
+
+  WindowDisplay.print_game game;
+  turn game
 
 let () = main ()

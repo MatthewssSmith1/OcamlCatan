@@ -255,7 +255,24 @@ let resources_of player =
     (Types.Sheep, player.sheep);
     (Types.Wheat, player.wheat);
     (Types.Brick, player.brick);
-    (Types.Ore, player.ore)
+    (Types.Ore, player.ore);
+  ]
+
+let used_devs_of player =
+  [
+    (Types.Knight, player.knight);
+    (Types.RoadBuilding, player.roadBuilding);
+    (Types.YearOfPlenty, player.yearOfPlenty);
+    (Types.Monopoly, player.monopoly);
+    (Types.VictoryPoint, player.victoryPoint);
+  ]
+
+let new_devs_of player =
+  [
+    (Types.Knight, player.newKnight);
+    (Types.RoadBuilding, player.newRoadBuilding);
+    (Types.YearOfPlenty, player.newYearOfPlenty);
+    (Types.Monopoly, player.newMonopoly);
   ]
 
 let num_resources player =
