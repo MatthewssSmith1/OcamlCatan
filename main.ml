@@ -76,6 +76,6 @@ let parseCommand input =
 let main () =
   (*failwith "TODO"*)
   let game = Game_state.make_new_game in
-  WindowDisplay.print_board (Game_state.game_to_board game)
+  WindowDisplay.print_game game
 
 let () = main ()

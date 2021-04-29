@@ -1,1 +1,1 @@
-val print_board : Board.t -> unit
+val print_game : Game_state.t -> unit
