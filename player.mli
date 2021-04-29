@@ -46,3 +46,5 @@ val end_turn : t -> t
 val num_resources : t -> int
 
 val num_devs : t -> int
+
+val pieces_left : t -> int * int * int

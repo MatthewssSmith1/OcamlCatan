@@ -252,3 +252,6 @@ let num_devs player =
   player.knight + player.roadBuilding + player.yearOfPlenty
   + player.monopoly + player.victoryPoint + player.newKnight
   + player.newRoadBuilding + player.newYearOfPlenty + player.newMonopoly
+
+let pieces_left player =
+  (player.roads, player.settlements, player.cities)
