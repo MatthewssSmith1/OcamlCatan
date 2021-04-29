@@ -107,41 +107,45 @@ let remove_dev dev amount player =
 
 let add_port port player = { player with ports = port :: player.ports }
 
-let place_road player =
-  if player.roads <= 13 then
-    if not (player.roads >= 1) then failwith "Not Enough Pieces"
-    else if not (player.brick >= 1 && player.wood >= 1) then
-      failwith "Not Enough Resources"
-    else
-      {
-        player with
-        roads = player.roads - 1;
-        brick = player.brick - 1;
-        wood = player.wood - 1;
-      }
-  else player
+let place_road player free =
+  if not (player.roads >= 1) then failwith "Not Enough Pieces"
+  else if free then { player with roads = player.roads - 1 }
+  else if not (player.brick >= 1 && player.wood >= 1) then
+    failwith "Not Enough Resources"
+  else
+    {
+      player with
+      roads = player.roads - 1;
+      brick = player.brick - 1;
+      wood = player.wood - 1;
+    }
 
-let place_settlement player =
-  if player.settlements <= 3 then
-    if not (player.settlements >= 1) then failwith "Not Enough Pieces"
-    else if
-      not
-        (player.brick >= 1 && player.wood >= 1 && player.sheep >= 1
-       && player.wheat >= 1)
-    then failwith "Not Enough Resources"
-    else
-      {
-        player with
-        settlements = player.settlements - 1;
-        brick = player.brick - 1;
-        wood = player.wood - 1;
-        sheep = player.sheep - 1;
-        wheat = player.wheat - 1;
-      }
-  else player
+let place_settlement player free =
+  if not (player.settlements >= 1) then failwith "Not Enough Pieces"
+  else if free then { player with settlements = player.settlements - 1 }
+  else if
+    not
+      (player.brick >= 1 && player.wood >= 1 && player.sheep >= 1
+     && player.wheat >= 1)
+  then failwith "Not Enough Resources"
+  else
+    {
+      player with
+      settlements = player.settlements - 1;
+      brick = player.brick - 1;
+      wood = player.wood - 1;
+      sheep = player.sheep - 1;
+      wheat = player.wheat - 1;
+    }
 
-let place_city player =
+let place_city player free =
   if not (player.cities >= 1) then failwith "Not Enough Pieces"
+  else if free then
+    {
+      player with
+      cities = player.cities - 1;
+      settlements = player.settlements + 1;
+    }
   else if not (player.ore >= 3 && player.wheat >= 2) then
     failwith "Not Enough Resources"
   else
@@ -252,3 +256,7 @@ let num_devs player =
   player.knight + player.roadBuilding + player.yearOfPlenty
   + player.monopoly + player.victoryPoint + player.newKnight
   + player.newRoadBuilding + player.newYearOfPlenty + player.newMonopoly
+
+let num_roads player = 15 - player.roads
+
+let num_settlements player = 5 - player.settlements - player.cities

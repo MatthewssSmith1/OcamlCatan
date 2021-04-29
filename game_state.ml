@@ -4,7 +4,21 @@ type t = {
   devs : Types.devCard list;
   longest_road : (Player.t * int) option;
   largest_army : (Player.t * int) option;
+  start_1 : bool;
+  start_2 : bool;
 }
+
+let start_1_done state =
+  List.fold_left
+    (fun x y ->
+      x && Player.num_roads y = 1 && Player.num_settlements y = 1)
+    true state.players
+
+let start_2_done state =
+  List.fold_left
+    (fun x y ->
+      x && Player.num_roads y = 2 && Player.num_settlements y = 2)
+    true state.players
 
 let roll_dice () =
   Random.init (Int.of_float (Unix.time ()));
@@ -13,10 +27,37 @@ let roll_dice () =
   let die_2 = Random.int 6 + 1 in
   die_1 + die_2
 
-let next_turn game =
-  match game.players with
-  | [] -> game
-  | h :: t -> { game with players = t @ [ Player.end_turn h ] }
+let end_turn game =
+  if game.start_2 then
+    match game.players with
+    | [] -> game
+    | h :: t -> { game with players = t @ [ Player.end_turn h ] }
+  else if start_2_done game then
+    match game.players with
+    | [] -> game
+    | h :: t ->
+        {
+          game with
+          players = List.rev (t @ [ Player.end_turn h ]);
+          start_2 = true;
+        }
+  else if game.start_1 then
+    match game.players with
+    | [] -> game
+    | h :: t -> { game with players = t @ [ Player.end_turn h ] }
+  else if start_1_done game then
+    match game.players with
+    | [] -> game
+    | h :: t ->
+        {
+          game with
+          players = List.rev (t @ [ Player.end_turn h ]);
+          start_1 = true;
+        }
+  else
+    match game.players with
+    | [] -> game
+    | h :: t -> { game with players = t @ [ Player.end_turn h ] }
 
 let current_turn game =
   match game.players with
@@ -49,6 +90,8 @@ let make_new_game =
     devs = dev_list ();
     longest_road = None;
     largest_army = None;
+    start_1 = false;
+    start_2 = false;
   }
 
 let game_to_players game = game.players
@@ -108,37 +151,55 @@ let distribute_resources state input =
   in
   hex_helper state hexes
 
-let build_road state hex dir =
+let build_road state hex dir free =
   try
-    let color = Player.get_color (current_turn state) in
-    let new_board =
-      Board.add_road (get_player state color) hex dir state.board
-    in
-    let new_player = Player.place_road (current_turn state) in
-    replace_player { state with board = new_board } color new_player
+    let player = current_turn state in
+    if
+      ((not state.start_1) && Player.num_roads player > 0)
+      || ((not state.start_2) && Player.num_roads player > 1)
+    then (
+      print_string "You can not add additional roads at this time";
+      state)
+    else
+      let color = Player.get_color player in
+      let new_board = Board.add_road player hex dir state.board in
+      let new_player = Player.place_road player free in
+      replace_player { state with board = new_board } color new_player
   with Failure x ->
     print_string x;
     state
 
-let build_settlement state hex dir =
+let build_settlement state hex dir free =
   try
-    let color = Player.get_color (current_turn state) in
-    let new_board =
-      Board.add_settlement (get_player state color) hex dir state.board
-    in
-    let new_player = Player.place_settlement (current_turn state) in
-    replace_player { state with board = new_board } color new_player
+    let player = current_turn state in
+    if
+      ((not state.start_1) && Player.num_settlements player > 0)
+      || ((not state.start_2) && Player.num_settlements player > 1)
+    then (
+      print_string "You can not add additional settlements at this time";
+      state)
+    else
+      let color = Player.get_color (current_turn state) in
+      let new_board =
+        Board.add_settlement
+          (get_player state color)
+          hex dir state.board
+      in
+      let new_player =
+        Player.place_settlement (current_turn state) free
+      in
+      replace_player { state with board = new_board } color new_player
   with Failure x ->
     print_string x;
     state
 
-let upgrade_city state hex dir =
+let upgrade_city state hex dir free =
   try
     let color = Player.get_color (current_turn state) in
     let new_board =
       Board.upgrade_city (get_player state color) hex dir state.board
     in
-    let new_player = Player.place_city (current_turn state) in
+    let new_player = Player.place_city (current_turn state) free in
     replace_player { state with board = new_board } color new_player
   with Failure x ->
     print_string x;
@@ -181,12 +242,16 @@ let accept_trade state color offer request =
 
 let make_move state input =
   match input with
-  | Types.BuildRoad (hex, dir) -> build_road state hex dir
-  | Types.BuildSettlement (hex, dir) -> build_settlement state hex dir
-  | Types.UpgradeCity (hex, dir) -> upgrade_city state hex dir
+  | Types.BuildRoad (hex, dir) ->
+      if state.start_2 then build_road state hex dir false
+      else build_road state hex dir true
+  | Types.BuildSettlement (hex, dir) ->
+      if state.start_2 then build_settlement state hex dir false
+      else build_settlement state hex dir true
+  | Types.UpgradeCity (hex, dir) -> upgrade_city state hex dir false
   | Types.OfferTrade (color, offer, request) ->
       accept_trade state color offer request
   | Types.BankTrade (pffer, request) -> failwith "Unimplemented"
   | Types.BuyDevCard -> buy_dev_card state
   | Types.UseDevCard dev -> failwith "Unimplemented"
-  | EndTurn -> next_turn state
+  | EndTurn -> end_turn state

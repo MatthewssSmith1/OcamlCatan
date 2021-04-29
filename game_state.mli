@@ -16,12 +16,12 @@ val game_to_players : t -> Player.t list
 (*For giving resources at the start of each turn*)
 val distribute_resources : t -> int -> t
 
-(*Player color, hex, dir, raises failure if not possible*)
-val build_road : t -> int -> int -> t
+(*Player color, hex, dir, free, raises failure if not possible*)
+val build_road : t -> int -> int -> bool -> t
 
-val build_settlement : t -> int -> int -> t
+val build_settlement : t -> int -> int -> bool -> t
 
-val upgrade_city : t -> int -> int -> t
+val upgrade_city : t -> int -> int -> bool -> t
 
 val buy_dev_card : t -> t
 
