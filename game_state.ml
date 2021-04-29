@@ -59,7 +59,7 @@ let end_turn game =
     | [] -> game
     | h :: t -> { game with players = t @ [ Player.end_turn h ] }
 
-let next_turn (game: t) = failwith "unimplemented"
+let next_turn (game : t) = failwith "unimplemented"
 
 let current_turn game =
   match game.players with
@@ -118,7 +118,7 @@ let replace_player state color player =
     | [] -> []
     | h :: t ->
         if Player.get_color h = color then player :: t
-        else helper t color player
+        else h :: helper t color player
   in
   { state with players = helper state.players color player }
 
