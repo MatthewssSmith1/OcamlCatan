@@ -127,8 +127,8 @@ let rec next_state game =
       print_commands ();
       next_state game
   | Redraw ->
-      WindowDisplay.initialize ();
-      WindowDisplay.print_game game;
+      Display.initialize ();
+      Display.print_game game;
       next_state game
   | f ->
       print_err f;
@@ -146,12 +146,12 @@ let main () =
 
   let rec turn game =
     let new_state = next_state game in
-    WindowDisplay.print_game new_state;
+    Display.print_game new_state;
     turn new_state
   in
 
-  WindowDisplay.initialize ();
-  WindowDisplay.print_game game;
+  Display.initialize ();
+  Display.print_game game;
   print_endline "type 'help' for a list of commands";
   try turn game
   with Quit ->
