@@ -46,9 +46,7 @@ val end_turn : t -> t
 
 val resources_of : t -> (Types.resource * int) list
 
-val used_devs_of : t -> (Types.devCard * int) list
-
-val new_devs_of : t -> (Types.devCard * int) list
+val devs_of : t -> (Types.devCard * int) list
 
 val num_resources : t -> int
 

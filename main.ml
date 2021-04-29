@@ -53,6 +53,26 @@ let parse_dev_card lst =
 
 exception Quit
 
+exception Help
+
+exception Redraw
+
+let command_info =
+  [
+    "road (r) - builds a road";
+    "settlement (s) - builds a settlement";
+    "upgrade (u) - builds a upgrade";
+    "trade (t) - offers a trade";
+    "bank (b) - trades with bank";
+    "buydev (bd) - buy development card";
+    "usedev (ud) - use development card";
+    "end (e) - ends turn";
+    "draw (d) - redraw the window (if you closed it)";
+    "quit (q) - quits game";
+  ]
+
+let print_commands () = print_endline "commands"
+
 let parse_command input =
   let words =
     input
@@ -60,14 +80,20 @@ let parse_command input =
     |> List.filter (fun s -> String.length s > 0)
   in
 
-  let words = match words with
-    | "r" :: tl -> "settlement" :: tl
+  let words =
+    match words with
+    | "r" :: tl -> "road" :: tl
     | "s" :: tl -> "settlement" :: tl
     | "u" :: tl -> "upgrade" :: tl
     | "t" :: tl -> "trade" :: tl
     | "b" :: tl -> "bank" :: tl
+    | "bd" :: tl -> "buydev" :: tl
+    | "ud" :: tl -> "usedev" :: tl
     | "e" :: tl -> "end" :: tl
-    | w -> w in
+    | "q" :: tl -> "quit" :: tl
+    | "d" :: tl -> "draw" :: tl
+    | w -> w
+  in
 
   match words with
   | [ "road"; a; b ] -> Types.BuildRoad (parse_hex_dir_tuple [ a; b ])
@@ -82,7 +108,9 @@ let parse_command input =
   | [ "usedev"; a ] -> Types.UseDevCard (parse_dev_card [ a ])
   | [ "end" ] -> Types.EndTurn
   (* raises Quit up the whole call stack to main *)
-  | [ "quit" ] -> raise Quit
+  | "quit" :: _ -> raise Quit
+  | "help" :: _ -> raise Help
+  | "draw" :: _ -> raise Redraw
   | [] -> failwith "empty command"
   | _ -> failwith "malformed command"
 
@@ -95,6 +123,13 @@ let rec next_state game =
   print_string "> ";
   try read_line () |> parse_command |> Game_state.make_move game with
   | Quit -> raise Quit
+  | Help ->
+      print_commands ();
+      next_state game
+  | Redraw ->
+      WindowDisplay.initialize ();
+      WindowDisplay.print_game game;
+      next_state game
   | f ->
       print_err f;
       next_state game
@@ -117,9 +152,10 @@ let main () =
 
   WindowDisplay.initialize ();
   WindowDisplay.print_game game;
-  try
-  turn game
-  with Quit -> ();
-  ()
+  print_endline "type 'help' for a list of commands";
+  try turn game
+  with Quit ->
+    ();
+    ()
 
 let () = main ()

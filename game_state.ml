@@ -28,10 +28,11 @@ let roll_dice () =
   die_1 + die_2
 
 let end_turn game =
+  let cycle h t game = { game with players = t @ [ Player.end_turn h ] } in
   if game.start_2 then
     match game.players with
     | [] -> game
-    | h :: t -> { game with players = t @ [ Player.end_turn h ] }
+    | h :: t -> cycle h t game
   else if start_2_done game then
     match game.players with
     | [] -> game
@@ -44,7 +45,7 @@ let end_turn game =
   else if game.start_1 then
     match game.players with
     | [] -> game
-    | h :: t -> { game with players = t @ [ Player.end_turn h ] }
+    | h :: t -> cycle h t game
   else if start_1_done game then
     match game.players with
     | [] -> game
@@ -57,7 +58,7 @@ let end_turn game =
   else
     match game.players with
     | [] -> game
-    | h :: t -> { game with players = t @ [ Player.end_turn h ] }
+    | h :: t -> cycle h t game
 
 let next_turn (game : t) = failwith "unimplemented"
 
@@ -97,11 +98,6 @@ let make_new_game () =
   }
 
 let game_to_players game = game.players
-
-let current_player game =
-  match game.players with
-  | [] -> failwith "current_player called on game with 0 players"
-  | hd :: _ -> hd
 
 let add_player game_state color =
   {

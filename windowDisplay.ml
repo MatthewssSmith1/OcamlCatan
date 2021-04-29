@@ -7,6 +7,8 @@ module Vec2 = struct
 
   let zero : t = (0., 0.)
 
+  let one : t = (1., 1.)
+
   let unit_i : t = (1., 0.)
 
   let unit_j : t = (0., 1.)
@@ -564,7 +566,7 @@ let rec draw_res_and_dev pos devs = function
   | _ :: tl -> draw_res_and_dev pos devs tl
 
 let draw_player_hand pos player =
-  let devs = Player.new_devs_of player in
+  let devs = Player.devs_of player in
   let ress = Player.resources_of player in
   draw_res_and_dev pos devs ress
 
@@ -588,14 +590,20 @@ let add_peices (board : Board.t) =
    hex_index_of_mouse_pos |> int_strings_of_vec in print_endline (x ^ ",
    " ^ y); print_clicks () *)
 
+let is_window_open () =
+  try
+    fill_rect Vec2.one (scale_int (-1) Vec2.one);
+    true
+  with _ -> false
+
 let initialize () =
+  Graphics.close_graph ();
   let w, h = int_strings_of_vec window_size in
   let x, y = int_strings_of_vec window_pos in
-  Graphics.open_graph (" " ^ w ^ "x" ^ h ^ "+" ^ x ^"-" ^ y ^ "");
+  Graphics.open_graph (" " ^ w ^ "x" ^ h ^ "+" ^ x ^ "-" ^ y ^ "");
   Graphics.set_window_title "OCaml Catan";
   Graphics.auto_synchronize false;
   Graphics.set_line_width line_width
-
 
 let print_game (game : Game_state.t) =
   let board = Game_state.game_to_board game in
@@ -605,7 +613,7 @@ let print_game (game : Game_state.t) =
   fill_hexes board;
   fill_edges_and_verts board;
   game |> Game_state.game_to_players |> draw_players_ui;
-  draw_player_hand (vec_of 20. 20.) (Game_state.current_player game);
+  draw_player_hand (vec_of 20. 20.) (Game_state.current_turn game);
   render ()
 
 (* ; Graphics.loop_at_exit [] ignore *)

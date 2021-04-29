@@ -258,21 +258,13 @@ let resources_of player =
     (Types.Ore, player.ore);
   ]
 
-let used_devs_of player =
+let devs_of player =
   [
-    (Types.Knight, player.knight);
-    (Types.RoadBuilding, player.roadBuilding);
-    (Types.YearOfPlenty, player.yearOfPlenty);
-    (Types.Monopoly, player.monopoly);
+    (Types.Knight, player.knight + player.newKnight);
+    (Types.RoadBuilding, player.roadBuilding + player.newRoadBuilding);
+    (Types.YearOfPlenty, player.yearOfPlenty + player.newYearOfPlenty);
+    (Types.Monopoly, player.monopoly + player.newMonopoly);
     (Types.VictoryPoint, player.victoryPoint);
-  ]
-
-let new_devs_of player =
-  [
-    (Types.Knight, player.newKnight);
-    (Types.RoadBuilding, player.newRoadBuilding);
-    (Types.YearOfPlenty, player.newYearOfPlenty);
-    (Types.Monopoly, player.newMonopoly);
   ]
 
 let num_resources player =
