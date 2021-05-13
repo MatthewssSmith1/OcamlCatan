@@ -19,7 +19,7 @@ type color =
   | Blue
   | White
 
-let colors = [Red; Orange; Blue; White]
+let colors = [ Red; Orange; Blue; White ]
 
 type vertex =
   | Empty
@@ -53,6 +53,16 @@ type turnCommand =
   | BuyDevCard
   | UseDevCard of devCard
   | EndTurn
+
+type boardClick =
+  | CHex of int
+  | CEdge of (int * int)
+  | CVert of (int * int)
+
+let string_of_board_click = function
+  | CHex i_hex -> ("hex " ^ (string_of_int i_hex))
+  | CEdge (i_hex, i_edge) -> ("hex " ^ (string_of_int i_hex) ^ " > edge " ^ (string_of_int i_edge))
+  | CVert (i_hex, i_vert) -> ("hex " ^ (string_of_int i_hex) ^ " > vert " ^ (string_of_int i_vert))
 
 let resource_to_string resource =
   match resource with

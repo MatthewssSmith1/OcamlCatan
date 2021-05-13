@@ -52,6 +52,14 @@ type turnCommand =
   | UseDevCard of devCard
   | EndTurn
 
+
+type boardClick =
+  | CHex of int
+  | CEdge of (int * int)
+  | CVert of (int * int)
+
+val string_of_board_click : boardClick -> string
+
 val resource_to_string : resource -> string
 
 val color_to_string : color -> string

@@ -9,6 +9,8 @@ module Vec2 = struct
 
   let one : t = (1., 1.)
 
+  let neg_one : t = (-1., -1.)
+
   let unit_i : t = (1., 0.)
 
   let unit_j : t = (0., 1.)
@@ -43,6 +45,10 @@ module Vec2 = struct
 
   let int_strings_of_vec =
     map (fun fl -> fl |> int_of_float |> string_of_int)
+
+  let rounded_string_of_vec vec =
+    let x, y = int_strings_of_vec vec in
+    "<" ^ x ^ ", " ^ y ^ ">"
 
   let element_wise_op (op : float -> float -> float) v1 v2 : t =
     let x = op (x_of v1) (x_of v2) in
@@ -93,6 +99,8 @@ module Vec2 = struct
     let yd = y1 -. y2 in
     sqrt ((xd *. xd) +. (yd *. yd))
 
+  let magnitude = distance zero
+
   let cube_round ((x, y) : t) =
     let z = -.x -. y in
     let rx = x |> Float.round in
@@ -118,6 +126,8 @@ let window_size = vec_of_ints 1500 900
 let window_pos = scale 0.5 (vec_of_ints 1920 1080 -.. window_size)
 
 let hex_size = 100.
+
+let inv_hex_size = 1. /. hex_size
 
 let line_width = 3
 
@@ -238,23 +248,71 @@ let unit_hexagon_coords : Vec2.t array =
     (sqrt_3 /. -2., 0.5);
   |]
 
-let coords_of_hex_index i =
+let unit_edge_coords : Vec2.t array =
+  let edge_center_coord dir () =
+    unit_hexagon_coords.(dir) +.. unit_hexagon_coords.((dir + 1) mod 6)
+    |> scale 0.5
+  in
+  Array.make 6 () |> Array.mapi edge_center_coord
+
+let cube_to_axial ((x, _, z) : float * float * float) = (x, z)
+
+let axial_to_cube (q, r) = (q, -.q -. r, r)
+
+let cube_round (x, y, z) =
+  let rx = Float.round x in
+  let ry = Float.round y in
+  let rz = Float.round z in
+
+  let x_diff = Float.abs (rx -. x) in
+  let y_diff = Float.abs (ry -. y) in
+  let z_diff = Float.abs (rz -. z) in
+
+  if x_diff > y_diff && x_diff > z_diff then (0. -. ry -. rz, ry, rz)
+  else if y_diff > z_diff then (rx, 0. -. rx -. rz, rz)
+  else (rx, ry, 0. -. rx -. ry)
+
+let hex_round (hex_pos : float * float) =
+  hex_pos |> axial_to_cube |> cube_round |> cube_to_axial
+
+let hex_index_of_axial = function
+  | -2, 2 -> Some 0
+  | -1, 2 -> Some 1
+  | 0, 2 -> Some 2
+  | -2, 1 -> Some 3
+  | -1, 1 -> Some 4
+  | 0, 1 -> Some 5
+  | 1, 1 -> Some 6
+  | -2, 0 -> Some 7
+  | -1, 0 -> Some 8
+  | 0, 0 -> Some 9
+  | 1, 0 -> Some 10
+  | 2, 0 -> Some 11
+  | -1, -1 -> Some 12
+  | 0, -1 -> Some 13
+  | 1, -1 -> Some 14
+  | 2, -1 -> Some 15
+  | 0, -2 -> Some 16
+  | 1, -2 -> Some 17
+  | 2, -2 -> Some 18
+  | _ -> None
+
+let hex_index_of_pixel_pos pos =
+  let x, y = pos -.. scale 0.5 window_size in
+  let q = ((sqrt_3 /. 3. *. x) -. (1. /. 3. *. y)) /. hex_size in
+  let r = 2. /. 3. *. y /. hex_size in
+  (q, r) |> hex_round |> ints_of_vec |> hex_index_of_axial
+
+let pos_of_hex_index index =
   let v =
-    i |> Board.hex_coords |> vec_of_int_tpl |> swap |> scale_y (-1.)
+    index |> Board.hex_coords |> vec_of_int_tpl |> swap |> scale_y (-1.)
     |> add_xy (-2.) 2.
   in
   let row_shift =
     if y_int_of v mod 2 == 0 then (0., 0.)
     else (x_of hex_spacing /. -2., 0.)
   in
-  (v *.. hex_spacing) +.. row_shift
-
-(* let hex_index_of_mouse_pos pos = let x, y = pos -.. board_pos in let
-   q = ((sqrt_3 /. 3. *. x) -. (1. /. 3. *. y)) /. hex_size in let r =
-   2. /. 3. *. y /. hex_size in vec_of_floats q r *)
-
-let pos_of_hex_index index =
-  scale 0.5 window_size +.. coords_of_hex_index index
+  (v *.. hex_spacing) +.. row_shift +.. scale 0.5 window_size
 
 let fill_robber pos =
   let pos = pos +.. (vec_of (-0.4) (-0.3) |> scale hex_size) in
@@ -329,8 +387,13 @@ let fill_vertex (vertex : Types.vertex) dir hex_pos =
 (** [y_of road_size] is one half the portion of the distance from one
     vertex to another which a road occupies. [x_of road_size] is one
     half the width of a road in the same absolute units as
-    [y_of road_size]. *)
+    [y_of road_size] (the distance from one vert to an adjascent one is
+    [hex_size]). *)
 let road_size = vec_of 0.065 0.3
+
+(** [hex_to_road_dist] is the distance from the center of a hex to the
+    closest point on a road adjascent to it *)
+let hex_to_road_dist = (hex_size /. 2. *. sqrt_3) -. x_of road_size
 
 let unit_road_coords : Vec2.t array =
   [|
@@ -340,14 +403,10 @@ let unit_road_coords : Vec2.t array =
     scale_x (-1.) road_size;
   |]
 
-let edge_center_coord dir =
-  unit_hexagon_coords.(dir) +.. unit_hexagon_coords.((dir + 1) mod 6)
-  |> scale 0.5
-
 let road_verts dir hex_pos =
   let map_coord v =
     v |> rotate_dir dir
-    |> ( +.. ) (edge_center_coord dir)
+    |> ( +.. ) unit_edge_coords.(dir)
     |> scale hex_size |> ( +.. ) hex_pos |> ints_of_vec
   in
   Array.map map_coord unit_road_coords
@@ -372,7 +431,7 @@ let fill_port dir hex_pos (port : Types.port) =
   let map_coord vert =
     vert
     |> ( +.. ) (scale port_gap j)
-    |> ( +.. ) (edge_center_coord 0)
+    |> ( +.. ) unit_edge_coords.(dir)
     |> rotate_degrees ((dir |> float_of_int) *. -60.)
     |> scale hex_size |> ( +.. ) hex_pos |> ints_of_vec
   in
@@ -587,13 +646,63 @@ let add_peices (board : Board.t) =
   |> Board.add_settlement bl 7 1
   |> Board.add_road bl 7 0
 
-(* let rec print_clicks () = let x, y = wait_next_click () |>
-   hex_index_of_mouse_pos |> int_strings_of_vec in print_endline (x ^ ",
-   " ^ y); print_clicks () *)
+let rec next_hex_click () =
+  let mouse_pos = wait_next_click () in
+  match mouse_pos |> hex_index_of_pixel_pos with
+  | Some i ->
+      let unit_mouse_pos =
+        mouse_pos -.. pos_of_hex_index i |> scale inv_hex_size
+      in
+      (i, magnitude unit_mouse_pos, unit_mouse_pos)
+  | None -> next_hex_click ()
+
+let closest_coord mouse_pos coords =
+  let index_with_dist i pos = (i, distance pos mouse_pos) in
+  let cmp_dist (_, d1) (_, d2) = Float.compare d1 d2 in
+  let sorted_verts = coords |> Array.mapi index_with_dist in
+  Array.sort cmp_dist sorted_verts;
+  sorted_verts.(0)
+
+let rec next_board_click () =
+  (* mouse_pos is relative to the center of the clicked hex, 1 unit is
+     hex_size number of pixels (distance from center of hex to vert) *)
+  let hex_index, hex_dist, mouse_pos = next_hex_click () in
+  let closest = closest_coord mouse_pos in
+  let vert_index, vert_dist = closest unit_hexagon_coords in
+  let edge_index, edge_dist = closest unit_edge_coords in
+  if vert_dist < 0.18 then Types.CVert (hex_index, vert_index)
+  else if hex_dist > hex_to_road_dist then
+    Types.CEdge (hex_index, edge_index)
+  else Types.CHex hex_index
+
+let rec print_board_clicks () =
+  next_board_click () |> Types.string_of_board_click |> print_endline;
+  print_board_clicks ()
+
+(* let rec next_clicked_hex () = match wait_next_click () |>
+   hex_index_of_pixel_pos with | Some index -> index | None ->
+   next_clicked_hex ()
+
+   let rec next_clicked_vertex () = let rec helper () = let mouse_pos =
+   wait_next_click () in match mouse_pos |> hex_index_of_pixel_pos with
+   | Some index -> (index, pos_of_hex_index index, mouse_pos) | None ->
+   helper () in let hex_index, hex_center, mouse_pos = helper () in let
+   dist_to_mouse = distance (mouse_pos -.. hex_center |> scale
+   inv_hex_size) in let index_with_dist i pos = (i, dist_to_mouse pos)
+   in let cmp_dist (_, d1) (_, d2) = Float.compare d1 d2 in let
+   sorted_verts = unit_hexagon_coords |> Array.mapi index_with_dist in
+   Array.sort cmp_dist sorted_verts; let vert_index, dist =
+   sorted_verts.(0) in print_endline (string_of_float dist); if dist >
+   0.18 then next_clicked_vertex () else (hex_index, vert_index, dist)
+
+   let rec print_vertex_clicks () = let hex_index, vert_index, dist =
+   next_clicked_vertex () in print_endline (string_of_int hex_index ^
+   "\n | " ^ string_of_int vert_index ^ " | " ^ string_of_float dist);
+   print_vertex_clicks () *)
 
 let is_window_open () =
   try
-    fill_rect Vec2.one (scale_int (-1) Vec2.one);
+    fill_rect Vec2.one Vec2.neg_one;
     true
   with _ -> false
 
@@ -619,7 +728,5 @@ let print_game (game : Game_state.t) =
   game |> Game_state.game_to_players |> draw_players_ui;
   draw_player_hand (vec_of 20. 20.) (Game_state.current_turn game);
   render ()
-
-(* ; Graphics.loop_at_exit [] ignore *)
-
-(* print_clicks () |> ignore *)
+  (* ;
+  print_board_clicks () *)
