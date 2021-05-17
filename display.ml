@@ -393,7 +393,7 @@ let road_size = vec_of 0.065 0.3
 
 (** [hex_to_road_dist] is the distance from the center of a hex to the
     closest point on a road adjascent to it *)
-let hex_to_road_dist = (hex_size /. 2. *. sqrt_3) -. x_of road_size
+let hex_to_road_dist = (sqrt_3 /. 2.) -. (x_of road_size) *. 2.
 
 let unit_road_coords : Vec2.t array =
   [|
@@ -670,6 +670,8 @@ let rec next_board_click () =
   let closest = closest_coord mouse_pos in
   let vert_index, vert_dist = closest unit_hexagon_coords in
   let edge_index, edge_dist = closest unit_edge_coords in
+  print_endline (string_of_float hex_dist);
+  print_endline (string_of_float hex_to_road_dist);
   if vert_dist < 0.18 then Types.CVert (hex_index, vert_index)
   else if hex_dist > hex_to_road_dist then
     Types.CEdge (hex_index, edge_index)
@@ -678,27 +680,6 @@ let rec next_board_click () =
 let rec print_board_clicks () =
   next_board_click () |> Types.string_of_board_click |> print_endline;
   print_board_clicks ()
-
-(* let rec next_clicked_hex () = match wait_next_click () |>
-   hex_index_of_pixel_pos with | Some index -> index | None ->
-   next_clicked_hex ()
-
-   let rec next_clicked_vertex () = let rec helper () = let mouse_pos =
-   wait_next_click () in match mouse_pos |> hex_index_of_pixel_pos with
-   | Some index -> (index, pos_of_hex_index index, mouse_pos) | None ->
-   helper () in let hex_index, hex_center, mouse_pos = helper () in let
-   dist_to_mouse = distance (mouse_pos -.. hex_center |> scale
-   inv_hex_size) in let index_with_dist i pos = (i, dist_to_mouse pos)
-   in let cmp_dist (_, d1) (_, d2) = Float.compare d1 d2 in let
-   sorted_verts = unit_hexagon_coords |> Array.mapi index_with_dist in
-   Array.sort cmp_dist sorted_verts; let vert_index, dist =
-   sorted_verts.(0) in print_endline (string_of_float dist); if dist >
-   0.18 then next_clicked_vertex () else (hex_index, vert_index, dist)
-
-   let rec print_vertex_clicks () = let hex_index, vert_index, dist =
-   next_clicked_vertex () in print_endline (string_of_int hex_index ^
-   "\n | " ^ string_of_int vert_index ^ " | " ^ string_of_float dist);
-   print_vertex_clicks () *)
 
 let is_window_open () =
   try
@@ -728,5 +709,5 @@ let print_game (game : Game_state.t) =
   game |> Game_state.game_to_players |> draw_players_ui;
   draw_player_hand (vec_of 20. 20.) (Game_state.current_turn game);
   render ()
-  (* ;
-  print_board_clicks () *)
+  ;
+  print_board_clicks ()
