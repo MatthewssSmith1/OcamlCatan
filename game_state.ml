@@ -4,7 +4,8 @@ type t = {
   devs : Types.devCard list;
   longest_road : (Player.t * int) option;
   largest_army : (Player.t * int) option;
-  (*0 for start of game, 1 for start of game part 2, 2 for normal play*)
+  (*0 for placing first settlements, 1 for placing second settlements, 2
+    for normal play*)
   phase : int;
 }
 
@@ -12,16 +13,16 @@ let start_1_done state =
   List.fold_left
     (fun x y ->
       x
-      && Player.num_roads y = 1
-      && Player.num_settlements y + Player.num_cities y = 1)
+      && Player.num_roads y >= 1
+      && Player.num_settlements y + Player.num_cities y >= 1)
     true state.players
 
 let start_2_done state =
   List.fold_left
     (fun x y ->
       x
-      && Player.num_roads y = 2
-      && Player.num_settlements y + Player.num_cities y = 2)
+      && Player.num_roads y >= 2
+      && Player.num_settlements y + Player.num_cities y >= 2)
     true state.players
 
 let roll_dice () =
@@ -191,7 +192,8 @@ let build_settlement state hex dir free =
       || state.phase = 1
          && Player.num_settlements player + Player.num_cities player > 1
     then (
-      print_string "You can not add additional settlements at this time";
+      print_string
+        "You can not place additional settlements at this time";
       state)
     else
       let color = Player.get_color (current_turn state) in
@@ -261,6 +263,11 @@ let accept_trade state color offer request =
   with Failure x ->
     print_string x;
     state
+
+let steal_resource state color =
+  let p2 = get_player state color in
+  let res = Player.random_resource p2 in
+  accept_trade state color [] [ res ]
 
 let make_move state input =
   match input with

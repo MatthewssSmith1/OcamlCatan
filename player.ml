@@ -288,3 +288,19 @@ let victory_points player =
   5 - player.settlements
   + ((4 - player.cities) * 2)
   + player.victoryPoint
+
+let random_resource player =
+  let total =
+    player.wood + player.sheep + player.wheat + player.brick
+    + player.ore
+  in
+  Random.init (Random.int 100);
+  let random = Random.int total in
+  if random < player.wood then Types.Wood
+  else if random < player.wood + player.sheep then Types.Sheep
+  else if random < player.wood + player.sheep + player.wheat then
+    Types.Wheat
+  else if
+    random < player.wood + player.sheep + player.wheat + player.brick
+  then Types.Brick
+  else Types.Ore
