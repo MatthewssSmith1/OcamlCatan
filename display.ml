@@ -677,6 +677,20 @@ let rec next_board_click () =
     Types.CEdge (hex_index, edge_index)
   else Types.CHex hex_index
 
+
+
+let rec next_hex_click () = match next_board_click () with
+  | CHex i -> i
+  | _ -> next_hex_click ()
+
+let rec next_edge_click () = match next_board_click () with
+  | Types.CEdge (i, dir) -> (i, dir)
+  | _ -> next_edge_click ()
+
+let rec next_vert_click () = match next_board_click () with
+  | Types.CVert (i, dir) -> (i, dir)
+  | _ -> next_edge_click ()
+
 let rec print_board_clicks () =
   next_board_click () |> Types.string_of_board_click |> print_endline;
   print_board_clicks ()
@@ -709,5 +723,5 @@ let print_game (game : Game_state.t) =
   game |> Game_state.game_to_players |> draw_players_ui;
   draw_player_hand (vec_of 20. 20.) (Game_state.current_turn game);
   render ()
-  ;
-  print_board_clicks ()
+  (* ;
+  print_board_clicks () *)
