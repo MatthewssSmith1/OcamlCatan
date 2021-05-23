@@ -304,3 +304,12 @@ let random_resource player =
     random < player.wood + player.sheep + player.wheat + player.brick
   then Types.Brick
   else Types.Ore
+
+let has_port player port =
+  let ports = player.ports in
+  let rec helper list =
+    match list with
+    | [] -> false
+    | h :: t -> if h = port then true else helper t
+  in
+  helper ports

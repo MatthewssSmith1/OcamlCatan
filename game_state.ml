@@ -264,6 +264,37 @@ let accept_trade state color offer request =
     print_string x;
     state
 
+let bank_trade state offer request =
+  let helper list =
+    match list with
+    | [ x; y ] -> if x = y then x else failwith "Invalid Offer"
+    | _ -> failwith "Invalid Offer"
+  in
+  if List.length request != 1 then (
+    print_string "Please request 1 resource";
+    state)
+  else
+    try
+      let p1 = current_turn state in
+      if
+        List.length offer = 4
+        || (List.length offer = 3 && Player.has_port p1 Types.ThreeToOne)
+        || List.length offer = 2
+           && Player.has_port p1 (Types.TwoToOne (helper offer))
+      then
+        let new_p1 =
+          p1
+          |> Player.add_resource_list request
+          |> Player.remove_resource_list offer
+        in
+        replace_player state (Player.get_color p1) new_p1
+      else (
+        print_string "Invalid Offer";
+        state)
+    with Failure x ->
+      print_string "x";
+      state
+
 let steal_resource state color =
   let p2 = get_player state color in
   let res = Player.random_resource p2 in
