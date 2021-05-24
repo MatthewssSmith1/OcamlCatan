@@ -323,9 +323,13 @@ let bank_trade state offer request =
       state
 
 let steal_resource state color =
-  let p2 = get_player state color in
-  let res = Player.random_resource p2 in
-  accept_trade state color [] [ res ]
+  try
+    let p2 = get_player state color in
+    let res = Player.random_resource p2 in
+    accept_trade state color [] [ res ]
+  with Failure x ->
+    print_string x;
+    state
 
 let move_robber state hex color =
   let verts = Board.hex_to_vertices state.board hex in
