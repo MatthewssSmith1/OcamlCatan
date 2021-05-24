@@ -277,7 +277,7 @@ let num_devs player =
 
 let num_roads player = 15 - player.roads
 
-let num_settlements player = 5 - player.settlements - player.cities
+let num_settlements player = 5 - player.settlements
 
 let num_cities player = 4 - player.cities
 
@@ -294,7 +294,8 @@ let random_resource player =
     player.wood + player.sheep + player.wheat + player.brick
     + player.ore
   in
-  Random.init (Random.int 100);
+  if total <= 0 then failwith "Player has no resources"
+  else Random.init (Random.int 100);
   let random = Random.int total in
   if random < player.wood then Types.Wood
   else if random < player.wood + player.sheep then Types.Sheep
