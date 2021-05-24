@@ -327,6 +327,23 @@ let steal_resource state color =
   let res = Player.random_resource p2 in
   accept_trade state color [] [ res ]
 
+let move_robber state hex color =
+  let verts = Board.hex_to_vertices state.board hex in
+  let rec helper list =
+    match list with
+    | [] -> false
+    | Types.Settlement x :: t | Types.City x :: t ->
+        if x = color then true else helper t
+    | Types.Empty :: t -> helper t
+  in
+  if helper verts then
+    let new_state = steal_resource state color in
+    let new_board = Board.move_robber new_state.board hex in
+    { new_state with board = new_board }
+  else (
+    print_string "Invalid Move";
+    state)
+
 let make_move state input =
   match input with
   | Types.BuildRoad (hex, dir) ->
@@ -344,5 +361,6 @@ let make_move state input =
   | EndTurn ->
       let roll = roll_dice () in
       print_endline (string_of_int roll ^ " was rolled");
-      distribute_resources (end_turn state) roll
+      if roll != 7 then distribute_resources (end_turn state) roll
+      else failwith "Unimplemented"
 (* end_turn state *)
