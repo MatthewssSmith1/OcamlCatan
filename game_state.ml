@@ -338,7 +338,7 @@ let make_move state input =
   | Types.UpgradeCity (hex, dir) -> upgrade_city state hex dir false
   | Types.OfferTrade (color, offer, request) ->
       accept_trade state color offer request
-  | Types.BankTrade (pffer, request) -> failwith "Unimplemented"
+  | Types.BankTrade (offer, request) -> bank_trade state offer request
   | Types.BuyDevCard -> buy_dev_card state
   | Types.UseDevCard dev -> failwith "Unimplemented"
   | EndTurn ->
