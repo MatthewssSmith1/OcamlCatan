@@ -27,3 +27,4 @@ _opam/
 
 # Local VS Code settings
 .vscode/
+.DS_Store
