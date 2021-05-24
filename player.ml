@@ -277,7 +277,7 @@ let num_devs player =
 
 let num_roads player = 15 - player.roads
 
-let num_settlements player = 5 - player.settlements - player.cities
+let num_settlements player = 5 - player.settlements
 
 let num_cities player = 4 - player.cities
 
