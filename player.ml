@@ -313,3 +313,5 @@ let has_port player port =
     | h :: t -> if h = port then true else helper t
   in
   helper ports
+
+let add_port player port = { player with ports = port :: player.ports }

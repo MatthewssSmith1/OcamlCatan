@@ -203,16 +203,43 @@ let build_settlement state hex dir free =
           hex dir state.board
       in
       if state.phase = 1 then
-        let new_player =
-          distribute_resource_vertex state hex dir
-            (Player.place_settlement (current_turn state) free)
-        in
-        replace_player { state with board = new_board } color new_player
+        match Board.get_port hex dir new_board with
+        | None ->
+            let new_player =
+              distribute_resource_vertex state hex dir
+                (Player.place_settlement (current_turn state) free)
+            in
+            replace_player
+              { state with board = new_board }
+              color new_player
+        | Some port ->
+            let new_player =
+              Player.add_port
+                (distribute_resource_vertex state hex dir
+                   (Player.place_settlement (current_turn state) free))
+                port
+            in
+            replace_player
+              { state with board = new_board }
+              color new_player
       else
-        let new_player =
-          Player.place_settlement (current_turn state) free
-        in
-        replace_player { state with board = new_board } color new_player
+        match Board.get_port hex dir new_board with
+        | None ->
+            let new_player =
+              Player.place_settlement (current_turn state) free
+            in
+            replace_player
+              { state with board = new_board }
+              color new_player
+        | Some port ->
+            let new_player =
+              Player.add_port
+                (Player.place_settlement (current_turn state) free)
+                port
+            in
+            replace_player
+              { state with board = new_board }
+              color new_player
   with Failure x ->
     print_string x;
     state

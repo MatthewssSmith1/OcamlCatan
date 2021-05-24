@@ -74,7 +74,7 @@ let vert_to_adj_edge_coords board x y =
     [ (x * 2, y - 1); (x * 2, y); ((x * 2) + offset, y) ]
   in
   List.filter
-    (fun (a, b) -> board.edges.(a).(b) <> None)
+    (fun (a, b) -> try board.edges.(a).(b) <> None with exn -> false)
     unchecked_coords
 
 let vert_to_adj_edges board hex dir =
@@ -114,7 +114,8 @@ let edge_to_adj_vert_coords board x y =
     [ ((x - offset) / 2, y); ((x + offset) / 2, y + (1 - offset)) ]
   in
   List.filter
-    (fun (a, b) -> board.vertices.(a).(b) <> None)
+    (fun (a, b) ->
+      try board.vertices.(a).(b) <> None with exn -> false)
     unchecked_coords
 
 let edge_to_adj_verts board hex dir =
@@ -393,6 +394,7 @@ let make_board () =
     (int_adder [ 0; 1; 2; 3; 4; 5; 6; 7; 8 ] ports)
 
 let shuffle a =
+  Random.init (Int.of_float (Unix.time ()));
   let n = Array.length a in
   let a = Array.copy a in
   for i = n - 1 downto 1 do
@@ -466,6 +468,39 @@ let int_to_hex_list board input =
   helper board input 0
 
 let get_robber board = board.robber
+
+let move_robber board loc =
+  if loc >= 0 && loc <= 18 then { board with robber = loc }
+  else failwith "Out Of Bounds"
+
+let port_edge_coords num =
+  let x = port_coords num in
+  edge_from_hex (hex_coords (fst x)) (snd x)
+
+let get_port_edge_coords coords board =
+  let ports = board.ports in
+  let rec helper ports =
+    match ports with
+    | [] -> None
+    | (num, port) :: t ->
+        if port_edge_coords num = coords then Some port else helper t
+  in
+  helper ports
+
+let get_port hex dir board =
+  let vert_coords = vertex_from_hex (hex_coords hex) dir in
+  let adj_edge_coords =
+    vert_to_adj_edge_coords board (fst vert_coords) (snd vert_coords)
+  in
+  let rec helper adj =
+    match adj with
+    | [] -> None
+    | h :: t -> (
+        match get_port_edge_coords h board with
+        | Some x -> Some x
+        | None -> helper t)
+  in
+  helper adj_edge_coords
 
 (* let verticies_of_player board team_color : (int * int) list = let
    map_y x y = function | None -> None | Some vert -> match vert with

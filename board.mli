@@ -46,5 +46,9 @@ val edge_to_adj_edge_coords : t -> int -> int -> (int * int) list
 
 val get_robber : t -> int
 
+val move_robber : t -> int -> t
+
+val get_port : int -> int -> t -> Types.port option
+
 (* val verticies_of_player : t -> Types.color -> (int * int) list val
    longest_road : t -> Types.color * int *)

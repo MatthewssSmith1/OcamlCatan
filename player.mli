@@ -66,3 +66,5 @@ val victory_points : t -> int
 val random_resource : t -> Types.resource
 
 val has_port : t -> Types.port -> bool
+
+val add_port : t -> Types.port -> t
