@@ -3,6 +3,7 @@ type t = {
   vertices : Types.vertex option array array;
   edges : Types.edge option array array;
   robber : int;
+  ports : (int * Types.port) list;
 }
 
 let hex_coords = function
@@ -165,6 +166,40 @@ let vert_to_adj_verts board hex dir =
       | _ -> failwith "should not occur")
     coords
 
+(*hex, dir*)
+let port_coords = function
+  | 0 -> (0, 0)
+  | 1 -> (1, 5)
+  | 2 -> (1, 0)
+  | 3 -> (2, 5)
+  | 4 -> (2, 0)
+  | 5 -> (2, 1)
+  | 6 -> (6, 0)
+  | 7 -> (6, 1)
+  | 8 -> (11, 0)
+  | 9 -> (11, 1)
+  | 10 -> (11, 2)
+  | 11 -> (15, 1)
+  | 12 -> (15, 2)
+  | 13 -> (18, 1)
+  | 14 -> (18, 2)
+  | 15 -> (18, 3)
+  | 16 -> (17, 2)
+  | 17 -> (17, 3)
+  | 18 -> (16, 2)
+  | 19 -> (16, 3)
+  | 20 -> (16, 4)
+  | 21 -> (12, 3)
+  | 22 -> (12, 4)
+  | 23 -> (7, 3)
+  | 24 -> (7, 4)
+  | 25 -> (7, 5)
+  | 26 -> (3, 4)
+  | 27 -> (3, 5)
+  | 28 -> (0, 4)
+  | 29 -> (0, 5)
+  | _ -> failwith "out of bounds"
+
 let has_road player hex dir board =
   let coords = hex_coords hex in
   let a, b = edge_from_hex coords dir in
@@ -194,10 +229,6 @@ let is_occupied player hex dir board =
   | None -> false
   | Some Empty -> false
 
-let can_add_road player hex dir board = failwith "Unimplemented"
-
-let can_add_settlement player hex dir board = failwith "Unimplemented"
-
 let add_road player hex dir board =
   let coords = hex_coords hex in
   let a, b = edge_from_hex coords dir in
@@ -217,11 +248,8 @@ let add_road player hex dir board =
       then (
         board.edges.(a).(b) <- Some (Road (Player.get_color player));
         board)
-      else (
-        failwith "illegal road"
-        (* print_string "Illegal Road";
-        board *)
-        )
+      else failwith "illegal road"
+(* print_string "Illegal Road"; board *)
 
 let add_settlement player hex dir board =
   let coords = hex_coords hex in
@@ -242,9 +270,7 @@ let add_settlement player hex dir board =
           Some (Settlement (Player.get_color player));
         board)
       else failwith "illegal settlement"
-        (* (
-        print_string "Illegal Settlement";
-        board) *)
+      (* ( print_string "Illegal Settlement"; board) *)
   | _ -> failwith "Already Exists"
 
 let add_settlement_start player hex dir board =
@@ -291,7 +317,7 @@ let find_desert board =
   in
   desert_helper board 0
 
-let make_board_from_array tiles =
+let make_board_from_array tiles ports =
   let board =
     {
       (* hexes = Array.make 5 (Array.make 5 None); *)
@@ -301,6 +327,7 @@ let make_board_from_array tiles =
       (* edges = Array.make 11 (Array.make 11 None); *)
       edges = Array.make_matrix 11 11 None;
       robber = -1;
+      ports;
     }
   in
   for i = 0 to 18 do
@@ -341,22 +368,59 @@ let basic =
       Other (11, Sheep);
     |]
 
-let make_board () = make_board_from_array basic
+let ports =
+  Types.
+    [
+      ThreeToOne;
+      ThreeToOne;
+      ThreeToOne;
+      ThreeToOne;
+      TwoToOne Types.Brick;
+      TwoToOne Types.Ore;
+      TwoToOne Types.Sheep;
+      TwoToOne Types.Wheat;
+      TwoToOne Types.Wood;
+    ]
+
+let rec int_adder ints ports =
+  match (ints, ports) with
+  | [], [] -> []
+  | h1 :: t1, h2 :: t2 -> (h1, h2) :: int_adder t1 t2
+  | _, _ -> failwith "This should never happen"
+
+let make_board () =
+  make_board_from_array basic
+    (int_adder [ 0; 1; 2; 3; 4; 5; 6; 7; 8 ] ports)
+
+let shuffle a =
+  let n = Array.length a in
+  let a = Array.copy a in
+  for i = n - 1 downto 1 do
+    let k = Random.int (i + 1) in
+    let x = a.(k) in
+    a.(k) <- a.(i);
+    a.(i) <- x
+  done;
+  a
+
+let port_helper () =
+  let port_spacing () =
+    Array.to_list (shuffle [| 1; 1; 1; 0; 0; 0; 0; 0; 0 |])
+  in
+  let port_offset () = Random.int 3 in
+  let port_order () = Array.to_list (shuffle (Array.of_list ports)) in
+  let rec helper spacing order prev =
+    match (spacing, order) with
+    | [], [] -> []
+    | h1 :: t1, h2 :: t2 ->
+        (prev + h1 + 3, h2) :: helper t1 t2 (prev + h1 + 3)
+    | _, _ -> failwith "This should never happen"
+  in
+  helper (port_spacing ()) (port_order ()) (port_offset () - 3)
 
 let make_random_board () =
   (* Random.init (Int.of_float (Unix.time ())); *)
-  let shuffle a =
-    let n = Array.length a in
-    let a = Array.copy a in
-    for i = n - 1 downto 1 do
-      let k = Random.int (i + 1) in
-      let x = a.(k) in
-      a.(k) <- a.(i);
-      a.(i) <- x
-    done;
-    a
-  in
-  make_board_from_array (shuffle basic)
+  make_board_from_array (shuffle basic) (port_helper ())
 
 let hex_to_vertices board n =
   let coords = hex_coords n in
