@@ -5,6 +5,22 @@
 (** Represents a possible player. See Catan rule book for valid players*)
 type t
 
+(** Returns whether or not a player has the resources and structures to
+    build a road*)
+val can_add_road : t -> bool
+
+(** Returns whether or not a player has the resources and structures to
+    build a settlement*)
+val can_add_settlement : t -> bool
+
+(** Returns whether or not a player has the resources and structures to
+    build a city*)
+val can_add_city : t -> bool
+
+(** Returns whether or not a player has the resources to buy a
+    development card*)
+val can_add_dev : t -> bool
+
 (** Addes the specified amount of the specified resource to the player*)
 val add_resource : Types.resource -> int -> t -> t
 
