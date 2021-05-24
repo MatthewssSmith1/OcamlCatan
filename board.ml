@@ -241,15 +241,23 @@ let add_road player hex dir board =
       let adj_verts = edge_to_adj_verts board hex dir in
       if
         List.fold_left
-          (fun x y -> x || has_road player hex dir board)
+          (fun x y ->
+            match y with
+            | Types.Road color ->
+                if color = Player.get_color player then true else x
+            | Types.Empty -> x)
           false adj_edges
         || List.fold_left
-             (fun x y -> x || has_settlement player hex dir board)
+             (fun x y ->
+               match y with
+               | Types.City color | Types.Settlement color ->
+                   if color = Player.get_color player then true else x
+               | Types.Empty -> x)
              false adj_verts
       then (
         board.edges.(a).(b) <- Some (Road (Player.get_color player));
         board)
-      else failwith "illegal road"
+      else failwith "Illegal Road"
 (* print_string "Illegal Road"; board *)
 
 let add_settlement player hex dir board =
@@ -261,16 +269,25 @@ let add_settlement player hex dir board =
       let adj_edges = vert_to_adj_edges board hex dir in
       let adj_verts = vert_to_adj_verts board hex dir in
       if
-        (fun x y -> x || has_road player hex dir board) false adj_edges
+        List.fold_left
+          (fun x y ->
+            match y with
+            | Types.Road color ->
+                if color = Player.get_color player then true else x
+            | Types.Empty -> x)
+          false adj_edges
         || not
              (List.fold_left
-                (fun x y -> x || is_occupied player hex dir board)
+                (fun x y ->
+                  match y with
+                  | Types.City _ | Types.Settlement _ -> true
+                  | Types.Empty -> x)
                 false adj_verts)
       then (
         board.vertices.(a).(b) <-
           Some (Settlement (Player.get_color player));
         board)
-      else failwith "illegal settlement"
+      else failwith "Illegal Settlement"
       (* ( print_string "Illegal Settlement"; board) *)
   | _ -> failwith "Already Exists"
 
@@ -284,15 +301,16 @@ let add_settlement_start player hex dir board =
       if
         not
           (List.fold_left
-             (fun x y -> x || is_occupied player hex dir board)
+             (fun x y ->
+               match y with
+               | Types.City _ | Types.Settlement _ -> true
+               | Types.Empty -> x)
              false adj_verts)
       then (
         board.vertices.(a).(b) <-
           Some (Settlement (Player.get_color player));
         board)
-      else (
-        print_string "Illegal Settlement";
-        board)
+      else failwith "Illegal Settlement"
   | _ -> failwith "Already Exists"
 
 let upgrade_city player hex dir board =
