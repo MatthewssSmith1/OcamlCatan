@@ -25,10 +25,6 @@ val add_settlement_start : Player.t -> int -> int -> t -> t
     hex and direction, fails if it cannot upgrade a settlement*)
 val upgrade_city : Player.t -> int -> int -> t -> t
 
-(** returns a new board state where the robber is moved to the specified
-    hex*)
-val move_robber : int -> t -> t
-
 (** returns a new standard board state*)
 val make_board : unit -> t
 
