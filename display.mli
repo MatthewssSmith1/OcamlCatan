@@ -1,6 +1,6 @@
-(** [Display] contains all the functionality for graphically showing
-    information about the current game state to the user and taking in
-    mouse inputs from the screen.*)
+(** Contains all the functionality for graphically showing information
+    about the current game state to the user and taking in mouse inputs
+    from the screen.*)
 
 (** Prints to the terminal a represntation of a game state*)
 val print_game : Game_state.t -> unit
