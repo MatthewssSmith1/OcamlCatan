@@ -308,8 +308,6 @@ let upgrade_city player hex dir board =
       board
   | Some (City _) -> failwith "Can't Build City On City"
 
-let move_robber hex state = { state with robber = hex }
-
 let find_desert board =
   let rec desert_helper board counter =
     if counter > 18 then failwith "Desert not found"
