@@ -1,2 +1,2 @@
-(* This file is deliberately empty. There is no reason to add anything
-   to it. *)
+(** This module contains the main function of the program, has no
+    exposed functionality.*)
