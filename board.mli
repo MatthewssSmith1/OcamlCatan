@@ -102,6 +102,5 @@ val move_robber : t -> int -> t
 val get_port_edge_coords : int * int -> t -> Types.port option
 
 (** given a hex number and direction returns [Some a] if the specified
-    board has a port of type [a] at that vertex, otherwise returns
-    [None]*)
+    vertex has access to a port of type [a], otherwise returns [None]*)
 val get_port : int -> int -> t -> Types.port option
