@@ -2,18 +2,20 @@
   TESTING PLAN: Our testing plan is divided into two parts: testing
   through OUnit and play testing of the actual game. The parts of our
   code that we tested automatically were mainly our helper functions
-  that we used to implement the game logic. The Board module is a good
-  example of this because most of the functions in it create simple
-  state changes that are then called repeatedly from other modules.
-  Other features though like making sure the game does not crash while
-  issuing commands or display incorrect information graphically we found
-  easier to test by repeatedly playtesting the game. We used primarily
-  black box testing to develop our test cases by determining ourselves
-  what the functions should return given their documentations and then
-  writing test cases to check our results. We believe this combination
-  of unit testing the foundational elements of the project and
-  playtesting to make sure they all fit together well allows us to
-  ensure the game plays reliably every time. 
+  that we used to implement the game logic, namely the Board and Player
+  modules, which are the most fundamental building blocks of our
+  project. The Board module is a good example of this because most of
+  the functions in it create simple state changes that are then called
+  repeatedly from other modules. Other features though like making sure
+  the game does not crash while issuing commands or display incorrect
+  information graphically we found easier to test by repeatedly
+  playtesting the game. We used primarily black box testing to develop
+  our test cases by determining ourselves what the functions should
+  return given their documentations and then writing test cases to check
+  our results. We believe this combination of unit testing the
+  foundational elements of the project and playtesting to make sure they
+  all fit together well allows us to ensure the game plays reliably
+  every time.
   *****************************************************************************)
 
 open OUnit2
