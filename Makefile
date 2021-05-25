@@ -1,4 +1,4 @@
-MODULES= types player board game_state display main input author 
+MODULES= types player board game_state display main author 
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
@@ -27,18 +27,12 @@ finalcheck:
 zip:
 	zip catan.zip *.ml* *.sh _tags .merlin .ocamlformat .ocamlinit LICENSE *.txt Makefile	
 	
-docs: docs-public docs-private
+docs: docs-public
 	
 docs-public: build
 	mkdir -p _doc.public
 	ocamlfind ocamldoc -I _build -package yojson,ANSITerminal \
 		-html -stars -d _doc.public $(MLIS)
-
-docs-private: build
-	mkdir -p _doc.private
-	ocamlfind ocamldoc -I _build -package yojson,ANSITerminal \
-		-html -stars -d _doc.private \
-		-inv-merge-ml-mli -m A $(MLIS) $(MLS)
 
 clean:
 	ocamlbuild -clean
