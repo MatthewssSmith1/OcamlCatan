@@ -71,7 +71,9 @@ let command_info =
     "quit (q) - quits game";
   ]
 
-let print_commands () = print_endline "commands"
+let rec print_commands = function
+  | [] -> ()
+  | hd :: tl -> print_endline hd; print_commands tl
 
 let parse_command input =
   let words =
@@ -124,7 +126,7 @@ let rec next_state game =
   try read_line () |> parse_command |> Game_state.make_move game with
   | Quit -> raise Quit
   | Help ->
-      print_commands ();
+      print_commands command_info;
       next_state game
   | Redraw ->
       Display.initialize ();
