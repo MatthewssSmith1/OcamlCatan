@@ -97,6 +97,11 @@ val get_robber : t -> int
     specified hex number, fails if hex number is out of bounds*)
 val move_robber : t -> int -> t
 
+(** given the coordinates of an edge, returns [Some a] if the specified
+    edge has a port of type [a], otherwise returns [None]*)
+val get_port_edge_coords : int * int -> t -> Types.port option
+
 (** given a hex number and direction returns [Some a] if the specified
-    board has a port of type [a] there, otherwise returns [None]*)
+    board has a port of type [a] at that vertex, otherwise returns
+    [None]*)
 val get_port : int -> int -> t -> Types.port option
