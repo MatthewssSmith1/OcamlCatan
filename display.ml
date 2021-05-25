@@ -121,11 +121,11 @@ open Vec2
 
 let sqrt_3 = sqrt 3.
 
-let window_size = vec_of_ints 1500 900
+let window_size = vec_of_ints 1600 900
 
 let window_pos = scale 0.5 (vec_of_ints 1920 1080 -.. window_size)
 
-let hex_size = 100.
+let hex_size = 90.
 
 let inv_hex_size = 1. /. hex_size
 
@@ -374,11 +374,13 @@ let fill_hexes (board : Board.t) =
   for i = 0 to 18 do
     let pos = pos_of_hex_index i in
     let hex = Board.hex_info board i in
-    fill_hex hex pos
-    ;
+    fill_hex hex pos;
     for j = 0 to 5 do
       match Board.get_port i j board with
-      | Some port -> fill_port j pos port
+      | Some port -> (
+          match Board.get_port i ((j + 1) mod 6) board with
+          | Some port -> fill_port j pos port
+          | _ -> ())
       | _ -> ()
     done
   done
@@ -728,10 +730,9 @@ let print_game (game : Game_state.t) =
   game |> Game_state.game_to_players |> draw_players_ui;
   draw_player_hand (vec_of 20. 20.) (Game_state.current_turn game);
 
-  (* fill_port 4 (pos_of_hex_index 0) Types.ThreeToOne;
-  fill_port 5 (pos_of_hex_index 1) (Types.TwoToOne Wood);
-  fill_port 0 (pos_of_hex_index 2) (Types.TwoToOne Ore); *)
-
+  (* fill_port 4 (pos_of_hex_index 0) Types.ThreeToOne; fill_port 5
+     (pos_of_hex_index 1) (Types.TwoToOne Wood); fill_port 0
+     (pos_of_hex_index 2) (Types.TwoToOne Ore); *)
   render ()
 
 (* ; print_board_clicks () *)
