@@ -366,5 +366,7 @@ let make_move state input =
       let roll = roll_dice () in
       print_endline (string_of_int roll ^ " was rolled");
       if roll != 7 then distribute_resources (end_turn state) roll
-      else failwith "Unimplemented"
+      else (
+        print_string "Unimplemented";
+        state)
 (* end_turn state *)
