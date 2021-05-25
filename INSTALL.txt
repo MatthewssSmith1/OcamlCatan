@@ -9,3 +9,4 @@ The following commands are supported:
   make build - builds the project
   make play - builds project and runs main function, starts a new game instance
   make docs - builds the project and generates public documentation
+  make test - builds the project and runs the OUnit test suite

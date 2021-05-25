@@ -31,8 +31,8 @@ val make_board : unit -> t
 (** returns a new board state generated randomly*)
 val make_random_board : unit -> t
 
-(** returns [Some a] where [a] is the [Types.hex] representaion of the
-    given hex on the board if it exists, otherwise returns [None] *)
+(** returns the [Types.hex] representaion of the given hex on the board
+    if it exists, otherwise fails *)
 val hex_info : t -> int -> Types.hex
 
 (** given a board and hex number returns a list containing the

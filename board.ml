@@ -407,7 +407,7 @@ let rec int_adder ints ports =
 
 let make_board () =
   make_board_from_array basic
-    (int_adder [ 0; 1; 2; 3; 4; 5; 6; 7; 8 ] ports)
+    (int_adder [ 0; 3; 6; 9; 12; 15; 19; 23; 27 ] ports)
 
 let shuffle a =
   Random.init (Int.of_float (Unix.time ()));
