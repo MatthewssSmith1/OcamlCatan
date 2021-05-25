@@ -15,11 +15,13 @@ val is_window_open : unit -> bool
     user*)
 val next_board_click : unit -> Types.boardClick
 
-(** returns the hex index clicked *)
+(** returns the index of the next hex that is clicked *)
 val next_hex_click : unit -> int
 
-(** returns (hex_index, edge_dir) *)
+(** returns coords in the form (hex_index, edge_dir) for the next edge
+    that is clicked *)
 val next_edge_click : unit -> int * int
 
-(** returns (hex_index, vert_dir) *)
+(** returns coords in the form (hex_index, vert_dir) for the next vertex
+    that is clicked *)
 val next_vert_click : unit -> int * int
