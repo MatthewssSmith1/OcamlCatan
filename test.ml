@@ -1,6 +1,8 @@
 open OUnit2
 open Game_state
 open Player
+open Board
+open Types
 
 (** [cmp_set_like_lists lst1 lst2] compares two lists to see whether
     they are equivalent set-like lists. That means checking two things.
@@ -42,9 +44,215 @@ let check_resource_test
     (Player.check_resource resource player)
     ~printer:string_of_int
 
-let player_tests = []
+let add_resource_list_test
+    (name : string)
+    (resources : Types.resource list)
+    (player : Player.t)
+    (resource : Types.resource)
+    (expected_output : int) =
+  name >:: fun _ ->
+  assert_equal expected_output
+    (Player.check_resource resource
+       (Player.add_resource_list resources player))
+    ~printer:string_of_int
+
+let remove_resource_list_test
+    (name : string)
+    (resources : Types.resource list)
+    (player : Player.t)
+    (resource : Types.resource)
+    (expected_output : int) =
+  name >:: fun _ ->
+  assert_equal expected_output
+    (Player.check_resource resource
+       (Player.remove_resource_list resources player))
+    ~printer:string_of_int
+
+let build_road_test
+    (name : string)
+    (player : Player.t)
+    (free : bool)
+    (resource : Types.resource)
+    (expected_output : int) =
+  name >:: fun _ ->
+  assert_equal expected_output
+    (Player.check_resource resource (Player.place_road player free))
+    ~printer:string_of_int
+
+let build_settlement_test
+    (name : string)
+    (player : Player.t)
+    (free : bool)
+    (resource : Types.resource)
+    (expected_output : int) =
+  name >:: fun _ ->
+  assert_equal expected_output
+    (Player.check_resource resource
+       (Player.place_settlement player free))
+    ~printer:string_of_int
+
+let build_city_test
+    (name : string)
+    (player : Player.t)
+    (free : bool)
+    (resource : Types.resource)
+    (expected_output : int) =
+  name >:: fun _ ->
+  assert_equal expected_output
+    (Player.check_resource resource (Player.place_city player free))
+    ~printer:string_of_int
+
+let buy_dev_test
+    (name : string)
+    (player : Player.t)
+    (resource : Types.resource)
+    (expected_output : int) =
+  name >:: fun _ ->
+  assert_equal expected_output
+    (Player.check_resource resource (Player.buy_dev player Knight))
+    ~printer:string_of_int
+
+let two_each =
+  add_resource_list
+    [ Wood; Wood; Sheep; Sheep; Wheat; Wheat; Brick; Brick; Ore; Ore ]
+    (make_player Types.Red)
+
+let three_each =
+  add_resource_list [ Wood; Sheep; Wheat; Brick; Ore ] two_each
+
+let player_tests =
+  [
+    check_resource_test "Check Wood" Types.Wood
+      (Player.add_resource Types.Wood 5 (make_player Types.Red))
+      5;
+    check_resource_test "Check Sheep" Types.Sheep
+      (Player.add_resource Types.Sheep 5 (make_player Types.Red))
+      5;
+    check_resource_test "Check Wheat" Types.Wheat
+      (Player.add_resource Types.Wheat 5 (make_player Types.Red))
+      5;
+    check_resource_test "Check Brick" Types.Brick
+      (Player.add_resource Types.Brick 5 (make_player Types.Red))
+      5;
+    check_resource_test "Check Ore" Types.Ore
+      (Player.add_resource Types.Ore 5 (make_player Types.Red))
+      5;
+    add_resource_list_test "1 Each Wood"
+      [ Wood; Sheep; Wheat; Brick; Ore ]
+      (make_player Types.Red) Wood 1;
+    add_resource_list_test "1 Each Sheep"
+      [ Wood; Sheep; Wheat; Brick; Ore ]
+      (make_player Types.Red) Sheep 1;
+    add_resource_list_test "1 Each Wheat"
+      [ Wood; Sheep; Wheat; Brick; Ore ]
+      (make_player Types.Red) Wheat 1;
+    add_resource_list_test "1 Each Brick"
+      [ Wood; Sheep; Wheat; Brick; Ore ]
+      (make_player Types.Red) Brick 1;
+    add_resource_list_test "1 Each Ore"
+      [ Wood; Sheep; Wheat; Brick; Ore ]
+      (make_player Types.Red) Ore 1;
+    remove_resource_list_test "Remove 1 Each Wood"
+      [ Wood; Sheep; Wheat; Brick; Ore ]
+      (add_resource_list
+         [ Wood; Sheep; Wheat; Brick; Ore ]
+         (make_player Types.Red))
+      Wood 0;
+    remove_resource_list_test "Remove 1 Each Sheep"
+      [ Wood; Sheep; Wheat; Brick; Ore ]
+      (add_resource_list
+         [ Wood; Sheep; Wheat; Brick; Ore ]
+         (make_player Types.Red))
+      Sheep 0;
+    remove_resource_list_test "Remove 1 Each Wheat"
+      [ Wood; Sheep; Wheat; Brick; Ore ]
+      (add_resource_list
+         [ Wood; Sheep; Wheat; Brick; Ore ]
+         (make_player Types.Red))
+      Wheat 0;
+    remove_resource_list_test "Remove 1 Each Brick"
+      [ Wood; Sheep; Wheat; Brick; Ore ]
+      (add_resource_list
+         [ Wood; Sheep; Wheat; Brick; Ore ]
+         (make_player Types.Red))
+      Brick 0;
+    remove_resource_list_test "Remove 1 Each Ore"
+      [ Wood; Sheep; Wheat; Brick; Ore ]
+      (add_resource_list
+         [ Wood; Sheep; Wheat; Brick; Ore ]
+         (make_player Types.Red))
+      Ore 0;
+    build_road_test "Not Free Wood" two_each false Wood 1;
+    build_road_test "Not Free Sheep" two_each false Sheep 2;
+    build_road_test "Not Free Wheat" two_each false Wheat 2;
+    build_road_test "Not Free Brick" two_each false Brick 1;
+    build_road_test "Not Free Ore" two_each false Ore 2;
+    build_road_test "Free Wood" two_each true Wood 2;
+    build_road_test "Free Sheep" two_each true Sheep 2;
+    build_road_test "Free Wheat" two_each true Wheat 2;
+    build_road_test "Free Brick" two_each true Brick 2;
+    build_road_test "Free Ore" two_each true Ore 2;
+    build_settlement_test "Not Free Wood" two_each false Wood 1;
+    build_settlement_test "Not Free Sheep" two_each false Sheep 1;
+    build_settlement_test "Not Free Wheat" two_each false Wheat 1;
+    build_settlement_test "Not Free Brick" two_each false Brick 1;
+    build_settlement_test "Not Free Ore" two_each false Ore 2;
+    build_settlement_test "Free Wood" two_each true Wood 2;
+    build_settlement_test "Free Sheep" two_each true Sheep 2;
+    build_settlement_test "Free Wheat" two_each true Wheat 2;
+    build_settlement_test "Free Brick" two_each true Brick 2;
+    build_settlement_test "Free Ore" two_each true Ore 2;
+    build_city_test "Not Free Wood" three_each false Wood 3;
+    build_city_test "Not Free Sheep" three_each false Sheep 3;
+    build_city_test "Not Free Wheat" three_each false Wheat 1;
+    build_city_test "Not Free Brick" three_each false Brick 3;
+    build_city_test "Not Free Ore" three_each false Ore 0;
+    buy_dev_test "Wood" two_each Wood 2;
+    buy_dev_test "Sheep" two_each Sheep 1;
+    buy_dev_test "Wheat" two_each Wheat 1;
+    buy_dev_test "Brick" two_each Brick 2;
+    buy_dev_test "Ore" two_each Ore 1;
+  ]
+
+let hex_info_test
+    (name : string)
+    (board : Board.t)
+    (hex : int)
+    (expected_output : hex) =
+  name >:: fun _ -> assert_equal expected_output (hex_info board hex)
+
+let robber_test
+    (name : string)
+    (board : Board.t)
+    (expected_output : int) =
+  name >:: fun _ ->
+  assert_equal expected_output
+    (Board.get_robber board)
+    ~printer:string_of_int
+
+let port_test
+    (name : string)
+    (board : Board.t)
+    (hex : int)
+    (dir : int)
+    (expected_output : port option) =
+  name >:: fun _ ->
+  assert_equal expected_output (Board.get_port hex dir board)
+
+let board_tests =
+  [
+    hex_info_test "basic desert" (make_board ()) 9 Desert;
+    hex_info_test "basic other" (make_board ()) 0 (Other (10, Ore));
+    robber_test "basic robber" (make_board ()) 9;
+    robber_test "moved robber" (Board.move_robber (make_board ()) 3) 3;
+    port_test "basic three to one" (make_board ()) 0 0 (Some ThreeToOne);
+    port_test "basic two to one" (make_board ()) 15 2
+      (Some (TwoToOne Brick));
+    port_test "basic not port" (make_board ()) 0 5 None;
+  ]
 
 let suite =
-  "test suite for OcamlCatan" >::: List.flatten [ player_tests ]
+  "test suite for OcamlCatan"
+  >::: List.flatten [ player_tests; board_tests ]
 
 let _ = run_test_tt_main suite
