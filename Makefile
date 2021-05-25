@@ -1,4 +1,4 @@
-MODULES= types player board game_state display main input author 
+MODULES= types player board game_state display main author 
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
