@@ -361,7 +361,9 @@ let make_move state input =
       accept_trade state color offer request
   | Types.BankTrade (offer, request) -> bank_trade state offer request
   | Types.BuyDevCard -> buy_dev_card state
-  | Types.UseDevCard dev -> failwith "Unimplemented"
+  | Types.UseDevCard dev ->
+      print_string "Unimplemented";
+      state
   | EndTurn ->
       let roll = roll_dice () in
       print_endline (string_of_int roll ^ " was rolled");
