@@ -314,6 +314,33 @@ let pos_of_hex_index index =
   in
   (v *.. hex_spacing) +.. row_shift +.. scale 0.5 window_size
 
+let port_gap = 0.15
+
+let port_width = 0.6
+
+let port_height = port_width *. sqrt_3 /. 2.
+
+let fill_port dir hex_pos (port : Types.port) =
+  set_color_port port;
+  let j = Vec2.unit_j |> Vec2.rotate_degrees (-30.) in
+  let i = j |> Vec2.rotate_degrees (-90.) in
+  let map_coord vert =
+    vert
+    |> ( +.. ) (scale port_gap j)
+    |> ( +.. ) unit_edge_coords.(0)
+    |> rotate_degrees ((dir |> float_of_int) *. -60.)
+    |> scale hex_size |> ( +.. ) hex_pos |> ints_of_vec
+  in
+  let verts =
+    Array.map map_coord
+      [|
+        scale (port_width /. 2.) i;
+        scale (port_width /. -2.) i;
+        scale port_height j;
+      |]
+  in
+  outline_poly verts
+
 let fill_robber pos =
   let pos = pos +.. (vec_of (-0.4) (-0.3) |> scale hex_size) in
   (* let pos = pos in *)
@@ -348,6 +375,12 @@ let fill_hexes (board : Board.t) =
     let pos = pos_of_hex_index i in
     let hex = Board.hex_info board i in
     fill_hex hex pos
+    ;
+    for j = 0 to 5 do
+      match Board.get_port i j board with
+      | Some port -> fill_port j pos port
+      | _ -> ()
+    done
   done
 
 (** maps team colors to their rgb equivalents *)
@@ -393,7 +426,7 @@ let road_size = vec_of 0.065 0.3
 
 (** [hex_to_road_dist] is the distance from the center of a hex to the
     closest point on a road adjascent to it *)
-let hex_to_road_dist = (sqrt_3 /. 2.) -. (x_of road_size) *. 2.
+let hex_to_road_dist = (sqrt_3 /. 2.) -. (x_of road_size *. 2.)
 
 let unit_road_coords : Vec2.t array =
   [|
@@ -417,33 +450,6 @@ let fill_edge dir hex_pos = function
       set_color_team c;
       let verts = road_verts dir hex_pos in
       outline_poly verts
-
-let port_gap = 0.15
-
-let port_width = 0.6
-
-let port_height = port_width *. sqrt_3 /. 2.
-
-let fill_port dir hex_pos (port : Types.port) =
-  set_color_port port;
-  let j = vec_of 0. 1. |> Vec2.rotate_degrees (-30.) in
-  let i = j |> Vec2.rotate_degrees (-90.) in
-  let map_coord vert =
-    vert
-    |> ( +.. ) (scale port_gap j)
-    |> ( +.. ) unit_edge_coords.(dir)
-    |> rotate_degrees ((dir |> float_of_int) *. -60.)
-    |> scale hex_size |> ( +.. ) hex_pos |> ints_of_vec
-  in
-  let verts =
-    Array.map map_coord
-      [|
-        scale (port_width /. 2.) i;
-        scale (port_width /. -2.) i;
-        scale port_height j;
-      |]
-  in
-  outline_poly verts
 
 let fill_edges_and_verts (board : Board.t) =
   for i = 0 to 18 do
@@ -677,17 +683,16 @@ let rec next_board_click () =
     Types.CEdge (hex_index, edge_index)
   else Types.CHex hex_index
 
+let rec next_hex_click () =
+  match next_board_click () with CHex i -> i | _ -> next_hex_click ()
 
-
-let rec next_hex_click () = match next_board_click () with
-  | CHex i -> i
-  | _ -> next_hex_click ()
-
-let rec next_edge_click () = match next_board_click () with
+let rec next_edge_click () =
+  match next_board_click () with
   | Types.CEdge (i, dir) -> (i, dir)
   | _ -> next_edge_click ()
 
-let rec next_vert_click () = match next_board_click () with
+let rec next_vert_click () =
+  match next_board_click () with
   | Types.CVert (i, dir) -> (i, dir)
   | _ -> next_edge_click ()
 
@@ -722,6 +727,11 @@ let print_game (game : Game_state.t) =
   (* vec_of 10. 10. |> fill_robber; *)
   game |> Game_state.game_to_players |> draw_players_ui;
   draw_player_hand (vec_of 20. 20.) (Game_state.current_turn game);
+
+  (* fill_port 4 (pos_of_hex_index 0) Types.ThreeToOne;
+  fill_port 5 (pos_of_hex_index 1) (Types.TwoToOne Wood);
+  fill_port 0 (pos_of_hex_index 2) (Types.TwoToOne Ore); *)
+
   render ()
-  (* ;
-  print_board_clicks () *)
+
+(* ; print_board_clicks () *)
